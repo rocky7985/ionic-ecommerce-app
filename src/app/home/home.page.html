@@ -1,0 +1,91 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button>
+        <img src="../../assets/menu_bar.svg" />
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div class="search ion-padding">
+    <ion-item lines="none">
+      <ion-input [placeholder]="getPlaceholder()" [(ngModel)]="searchPost" (ionChange)="search()"
+        (ionClear)="onClearSearch()"></ion-input>
+      <ion-icon name="search-outline" slot="start"></ion-icon>
+      <ion-icon name="filter-outline" slot="end" (click)="presentPopover($event)"></ion-icon>
+    </ion-item>
+
+    <ion-popover #popover [isOpen]="isOpen" (didDismiss)="isOpen = false" [dismissOnSelect]="true">
+      <ng-template>
+        <ion-item button (click)="onFilterChange('Featured')">Featured Products</ion-item>
+        <ion-item button (click)="onFilterChange('Categories')">Categories</ion-item>
+        <ion-item button (click)="onFilterChange('Best Sell')">Best Sell</ion-item>
+      </ng-template>
+    </ion-popover>
+  </div>
+
+  <div class="title ion-padding">
+    <h2 class="font-bold">Categories</h2>
+    <p (click)="navigateToSeeAll('categories')" class="font-bold">See all</p>
+    <ion-spinner color="primary" *ngIf="loadingCategories"></ion-spinner>
+  </div>
+
+  <swiper-container *ngIf="!loadingCategories" slides-per-view="2" speed="500" space-between="10" pagination="true">
+    <swiper-slide *ngFor="let category of categories">
+      <div class="category-item" (click)="category.action()">
+        <img [src]="category.image" />
+        <h4 class="font-bold">{{ category.name }}</h4>
+      </div>
+    </swiper-slide>
+  </swiper-container>
+
+  <div class="title ion-padding">
+    <h2 class="font-bold">Featured</h2>
+    <p (click)="navigateToSeeAll('featured')" class="font-bold">See all</p>
+    <ion-spinner color="primary" *ngIf="loadingFeatured"></ion-spinner>
+  </div>
+
+  <swiper-container *ngIf="!loadingFeatured" slides-per-view="2" speed="500" space-between="10" pagination="true">
+    <swiper-slide *ngFor="let product of featuredProducts">
+      <div class="product-item">
+
+        <div class="icon-container" (click)="addToFavourites(product.Id)">
+          <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
+            [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
+        </div>
+
+        <img [src]="product.image" />
+        <h2 (click)="navigateToItemDetails(product.Id)" class="font-bold">{{product.title}}</h2>
+        <p class="font-bold">${{ product.price }}</p>
+        <h6 class="font-bold">{{ product.offers }}</h6>
+      </div>
+    </swiper-slide>
+  </swiper-container>
+
+  <div class="title ion-padding">
+    <h2 class="font-bold">Best Sell</h2>
+    <p (click)="navigateToSeeAll('bestSell')" class="font-bold">See all</p>
+    <ion-spinner color="primary" *ngIf="loadingBestSell"></ion-spinner>
+  </div>
+
+  <swiper-container *ngIf="!loadingBestSell" slides-per-view="2" speed="500" space-between="10" pagination="true">
+    <swiper-slide *ngFor="let product of bestSellProducts">
+      <div class="product-item">
+
+        <div class="icon-container" (click)="addToFavourites(product.Id)">
+          <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
+            [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
+        </div>
+
+        <img [src]="product.image" />
+        <h2 (click)="navigateToItemDetails(product.Id)" class="font-bold">{{product.title}}</h2>
+        <p class="font-bold">${{ product.price }}</p>
+        <h6 class="font-bold">{{ product.offers }}</h6>
+      </div>
+    </swiper-slide>
+  </swiper-container>
+
+</ion-content>

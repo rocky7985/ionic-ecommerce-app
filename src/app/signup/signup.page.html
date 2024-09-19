@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button class="backbtn" routerLink="/welcome" routerDirection="back">
+        <img src="../../assets/back.svg" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="ion-padding container">
+    <h1>Signup</h1>
+
+    <form [formGroup]="signupForm" (ngSubmit)="signup(signupForm.value)">
+
+      <div class="form-container">
+
+        <ion-item>
+          <ion-label class="font-bold">Select Role</ion-label>
+          <ion-select formControlName="role" placeholder="Choose the Profile to Signup">
+            <ion-select-option value="customer" class="font-bold">Customer</ion-select-option>
+            <ion-select-option value="shop" class="font-bold">Shop</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating" class="font-bold">Name</ion-label>
+          <ion-input formControlName="name"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating" class="font-bold">Phone</ion-label>
+          <ion-input formControlName="phone" maxLength="10"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating" class="font-bold">Address</ion-label>
+          <ion-input formControlName="address"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating" class="font-bold">Email</ion-label>
+          <ion-input formControlName="email"></ion-input>
+        </ion-item>
+        <ion-text color="danger" *ngIf="signupForm.get('email').hasError('lowercaseEmail')">
+          Email must start with a lowercase letter.
+        </ion-text>
+
+        <ion-item>
+          <ion-label position="floating" class="font-bold">Password</ion-label>
+          <ion-input [type]="showPassword ? 'text' : 'password'" formControlName="password"></ion-input>
+          <ion-icon slot="end" [name]="showPassword ? 'eye-outline' : 'eye-off-outline'"
+            (click)="toggleShowPassword()"></ion-icon>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating" class="font-bold">Confirm Password</ion-label>
+          <ion-input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword"></ion-input>
+          <ion-icon slot="end" [name]="showConfirmPassword ? 'eye-outline' : 'eye-off-outline'"
+            (click)="toggleShowConfirmPassword()"></ion-icon>
+        </ion-item>
+        <ion-text color="danger" *ngIf="signupForm.hasError('passwordNotMatch')">
+          Password and Confirm Password fields should match
+        </ion-text>
+
+        <ion-button expand="block" class="main-button" type="submit"
+          [disabled]="signupForm.invalid || signupForm.hasError('passwordNotMatch')">
+          Sign Up</ion-button>
+
+        <div class="sign-up">
+          Already have an account? <ion-button color="dark" fill="clear" routerLink="/login"
+            routerDirection="forward">Sign in</ion-button>
+        </div>
+      </div>
+    </form>
+    <ion-spinner color="primary" *ngIf="isSubmitting"></ion-spinner>
+  </div>
+</ion-content>

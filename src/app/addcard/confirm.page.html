@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/checkout" routerDirection="back">
+        <img src='../../assets/back-dark.svg' />
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="title">Add Card</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- <div *ngIf="loadProfileData" class="spinner-container">
+  <ion-spinner color="primary"></ion-spinner>
+  </div> -->
+  <!-- <div *ngIf="!loadProfileData" class="card-info"> -->
+    <div class="card-info">
+
+    <form [formGroup]="addcard" (ngSubmit)="saveCardData()">
+
+      <ion-item>
+        <ion-label position="floating">Card Holder Name</ion-label>
+        <ion-input formControlName="cardname"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Card Number</ion-label>
+        <ion-input formControlName="cardnumber"   
+        (ionInput)="formatCardNumber($event)"
+        maxlength="19"
+        inputmode="numeric"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Expiry Date</ion-label>
+        <ion-input formControlName="expiryDate"
+        (ionInput)="formatExpiryDate($event)"
+          maxlength="5"
+          inputmode="numeric"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">CVV</ion-label>
+        <ion-input formControlName="cvv"      
+        maxlength="3"
+        inputmode="numeric"></ion-input>
+      </ion-item>
+
+      <ion-button expand="full" class="addcard" type="submit">Add Card</ion-button>
+      <ion-button expand="full" class="addcard" type="submit" color = "warning" routerLink="/savedcards">Go to Saves Cards</ion-button>
+    </form>
+  </div>
+</ion-content>

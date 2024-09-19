@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/home" routerDirection="back">
+        <img src='../../assets/back-dark.svg' />
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title class="centered-title">Profile</ion-title>
+
+
+    <!-- <ion-buttons slot="end">
+      <ion-button class="notification">
+        <ion-icon name="notifications-outline" color="dark"></ion-icon>
+      </ion-button>
+    </ion-buttons> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <div *ngIf="loadProfileData" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!loadProfileData" >
+    <div class="profile-info">
+    <ion-item>
+      <ion-label position="floating">Name</ion-label>
+      <ion-input [value] = "profileData.name" readonly></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Phone Number</ion-label>
+      <ion-input [value] = "profileData.phone" readonly></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Email</ion-label>
+      <ion-input [value]= "profileData.email" readonly></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Address Lane</ion-label>
+      <ion-input [value] = "profileData.address" readonly></ion-input>
+    </ion-item>
+  </div>
+  <ion-button expand="block"  type="submit" routerLink="/update-profile" routerDirection="forward">Edit Profile</ion-button>
+  </div>
+</ion-content>

@@ -1,0 +1,82 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/checkout" routerDirection="back">
+        <img src='../../assets/back-dark.svg' />
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="centered-title">Payment Gateway</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true">
+
+  <div *ngIf="loadCheckoutData" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+
+  <div class="icon-container">
+    <ion-icon name="add-circle-outline" color="danger" class="custom-icon" (click)="navigateToAddCard()"></ion-icon>
+  </div>
+
+  <div class="scrollable-card-items">
+    <ion-card mode="ios" color="medium" *ngFor="let item of cardData; let i = index">
+      <ion-card-content>
+        <div class="card-header">
+          <ion-icon name="create-outline" class="edit-button" (click)="updateAndNavigate($event, item)"></ion-icon>
+          <ion-checkbox slot="end" (ionChange)="toggleCardSelection(item)"
+            [checked]="selectedCards==item"></ion-checkbox>
+        </div>
+        <div class="icon-container">
+          <ion-icon name="trash-outline" color="danger" class="custom-icon" (click)="deleteCard(item.id)"></ion-icon>
+        </div>
+        <div class="item-info">
+          <h2 class="font-bold">Card Holder Name: {{ item.card_name }}</h2>
+          <h2>Card Number:{{ formatCardNumber(item.card_num) }}</h2>
+          <h2>Expiry Date:{{ item.exp_date }}</h2>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="address">
+    <ion-label color="tertiary" class="font-bold">Delivery-Address:</ion-label>
+    <ion-item lines="none">
+      {{ selectedAddress?.address || 'No Address Selected' }}
+      <ion-badge slot="end">&nbsp;</ion-badge>
+      <ion-chip color="success">{{selectedAddress?.location}}</ion-chip>
+    </ion-item>
+  </div>
+
+  <hr>
+
+  <div class="cart-total">
+
+    <ion-item lines="none">
+      <ion-label>UnitPrice</ion-label>
+      <ion-label slot="end" class="ion-text-right">10</ion-label>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label>Discount</ion-label>
+      <ion-label slot="end" class="ion-text-right">5%</ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Shipping</ion-label>
+      <ion-label slot="end" class="ion-text-right">$10.00</ion-label>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label>Total</ion-label>
+      <ion-label slot="end" class="ion-text-right">{{totaprice | currency}}</ion-label>
+    </ion-item>
+  </div>
+  <!-- </div> -->
+</ion-content>
+
+<ion-footer translucent="true" class="ion-no-border" mode="md">
+  <ion-toolbar color="translucent">
+    <ion-button expand="block" class="main-button" (click)="payout()" color="warning">Paynow</ion-button>
+  </ion-toolbar>
+</ion-footer>

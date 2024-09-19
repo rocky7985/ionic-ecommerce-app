@@ -1,0 +1,86 @@
+// General styles for the page
+.page {
+    ion-toolbar {
+        --background: #fff;
+        --border-color: #ccc;
+    }
+
+    ion-title.title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .backbtn {
+        img {
+            width: 24px;
+            height: 24px;
+        }
+    }
+}
+
+// Spinner styles
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.8);
+
+    ion-spinner {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+// Form container styles
+.profile-info {
+    padding: 16px;
+
+    ion-item {
+        --background: transparent;
+        --border-color: #ccc;
+        --border-radius: 8px;
+        margin-bottom: 12px;
+
+        ion-label {
+            color: #666;
+        }
+
+        ion-input {
+            color: #333;
+            font-size: 16px;
+            padding: 8px 0;
+        }
+    }
+
+    ion-button.update {
+        --background: #3880ff;
+        --background-focused: #3171e0;
+        --background-hover: #3171e0;
+        --background-activated: #3171e0;
+        --border-radius: 8px;
+        margin-top: 24px;
+    }
+
+    ion-button[disabled] {
+        opacity: 0.5;
+    }
+}
+
+// Additional styling for responsive behavior
+@media (max-width: 768px) {
+    .profile-info {
+        padding: 8px;
+
+        ion-item {
+            ion-input {
+                font-size: 14px;
+            }
+        }
+
+        ion-button.update {
+            font-size: 14px;
+        }
+    }
+}

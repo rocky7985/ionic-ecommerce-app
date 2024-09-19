@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Select Address</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="isLoading" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <ion-icon name="add-circle-outline" color="danger" class="add-icon" (click)="goto()"></ion-icon>
+    <ion-list>
+      <ion-card mode="ios" color="medium" *ngFor="let address of addressList" (click)="selectAddress(address)"
+        class="address-card">
+        <ion-card-content>
+
+          <ion-icon name="create-outline" color="danger" class="edit-button"
+            (click)="updateAndNavigate($event, address)"></ion-icon>
+          <ion-checkbox slot="end" [checked]="selectedAddress?.id == address.id"
+            class="address-checkbox"></ion-checkbox>
+
+          <div class="address-details">
+            <h2>{{ address.address }}</h2>
+            <h2>Location:{{address.location}}</h2>
+            <ion-icon name="trash-outline" color="danger" class="delete-icon" (click)="deleteAlert(address)">
+            </ion-icon>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="block" (click)="confirmSelection()">Confirm</ion-button>
+  </ion-toolbar>
+</ion-footer>

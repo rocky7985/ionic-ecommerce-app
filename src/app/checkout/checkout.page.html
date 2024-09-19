@@ -1,0 +1,96 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-buttons class="backbtn" routerLink="/my-cart" routerDirection="back">
+        <img src="../../assets/back-dark.svg" />
+      </ion-buttons>
+    </ion-buttons>
+
+    <ion-title class="title">Checkout</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true">
+
+  <div *ngIf="loadCheckoutData" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!loadCheckoutData" class="cart-items">
+    <ion-card mode="ios" *ngFor="let item of checkoutItems; let i = index">
+      <ion-card-content>
+        <div class="item-img">
+          <img [src]="item.image" />
+        </div>
+
+        <div class="item-info">
+
+          <!-- <ion-icon name="trash-outline" color="danger" (click)="deleteCartItem(item.Id)" class="delete-icon"></ion-icon> -->
+
+          <h2 class="font-bold">{{item.title}}</h2>
+          <p>{{item.color}}</p>
+          <p>{{item.size}}</p>
+          <p>${{item.item_total_price}}</p>
+
+          <div class="qty-selector">
+            <ion-chip fill="clear" color="tertiary" (click)="decreaseQuantity(item.Id, i)">-</ion-chip>
+            <ion-label>{{item.quantity}}</ion-label>
+            <ion-chip fill="clear" color="tertiary" (click)="increaseQuantity(item.Id, i)">+</ion-chip>
+            <ion-spinner color="primary" *ngIf="item.isLoading" class="quantity-spinner"></ion-spinner>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+    <!-- </div> -->
+
+    <!-- <div class="address">
+      <ion-item lines="none">
+        {{loginUser.address}}
+        <ion-badge slot="end">&nbsp;</ion-badge>
+      </ion-item>
+    </div> -->
+
+    <div class="address" (click)="selectAddressModal()">
+      <ion-item lines="none">
+        <ion-label>
+          <ion-icon name="location-outline" class="highlight-icon"></ion-icon>
+          <span class="select-address-text">
+            {{ selectedAddress?.address || 'Select Address' }}
+          </span>
+        </ion-label>
+        <ion-badge slot="end">&nbsp;</ion-badge>
+      </ion-item>
+    </div>
+
+    <hr>
+
+    <div class="cart-total">
+
+      <ion-item lines="none">
+        <ion-label>UnitPrice</ion-label>
+        <ion-label slot="end" class="ion-text-right">10</ion-label>
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-label>Discount</ion-label>
+        <ion-label slot="end" class="ion-text-right">5%</ion-label>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Shipping</ion-label>
+        <ion-label slot="end" class="ion-text-right">$10.00</ion-label>
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-label>Total</ion-label>
+        <ion-spinner color="primary" *ngIf="loadCheckoutData"></ion-spinner>
+        <ion-label slot="end" class="ion-text-right">{{totalPrice | currency}}</ion-label>
+      </ion-item>
+    </div>
+  </div>
+</ion-content>
+<ion-footer translucent="true" class="ion-no-border" mode="md">
+  <ion-toolbar color="translucent">
+    <ion-button expand="block" class="main-button" [disabled]="!selectedAddress" (click)="buy()">Buy</ion-button>
+  </ion-toolbar>
+</ion-footer>

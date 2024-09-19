@@ -1,0 +1,84 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/home" routerDirection="back">
+        <img src='../../assets/back-dark.svg' />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{context == 'categories' ? 'Categories' : context == 'featured' ? 'Featured Products' : 'Best
+      Sell'}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div *ngIf="loader && items.length == 0" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+
+  <div class="product-slider ion-padding-start" *ngIf="context == 'categories' && items.length>0">
+    <ion-grid>
+      <ion-row class="ion-no-padding">
+        <ion-col size="6" class="ion-text-left custom-space" *ngFor="let item of items">
+          <ion-card (click)="item.action()">
+            <img [src]="item.image">
+
+            <ion-card-content>
+              <h2 class="font-bold">{{ item.name }}</h2>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row></ion-grid>
+  </div>
+
+  <div class="product-slider ion-padding-start" *ngIf="context == 'featured' && items.length>0">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" class="ion-text-left" *ngFor="let product of items">
+          <ion-card (click)="navigateToItemDetails(product.Id)">
+
+            <div class="icon-container">
+              <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
+                [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
+            </div>
+
+            <img [src]="product.image" />
+            <ion-card-content>
+              <h2 class="font-bold">{{ product.title }}</h2>
+              <p class="font-bold">${{ product.price }}</p>
+              <h6 class="font-bold">{{ product.offers }}</h6>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <div class="product-slider ion-padding-start" *ngIf="context == 'bestSell' && items.length>0">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" class="ion-text-left" *ngFor="let product of items">
+          <ion-card (click)="navigateToItemDetails(product.Id)">
+            <div class="icon-container">
+              <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
+                [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
+            </div>
+            <img [src]="product.image" />
+            <ion-card-content>
+              <h2 class="font-bold">{{ product.title }}</h2>
+              <p class="font-bold">${{ product.price }}</p>
+              <h6 class="font-bold">{{ product.offers }}</h6>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <ion-infinite-scroll threshold="100px"
+  (ionInfinite)="context == 'categories' ? getCategories($event) : (context == 'featured' ? getFeaturedProducts($event) : getbestSell($event))"
+  *ngIf="loadMoreProducts">
+  <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data..."></ion-infinite-scroll-content>
+</ion-infinite-scroll>
+
+</ion-content>

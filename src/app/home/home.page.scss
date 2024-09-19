@@ -1,0 +1,116 @@
+.search {
+    margin-bottom: 10px;
+
+    ion-item {
+        border-radius: 10px;
+        box-shadow: 0px 13px 30px 0px rgba(0, 0, 0, 0.09);
+        padding: 8px;
+
+        ion-icon {
+            margin-right: 16px;
+        }
+
+        ion-input {
+            padding-left: 10px !important;
+            border-left: 1px solid #F4F4F4;
+        }
+    }
+}
+
+.title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 6px;
+
+    h2 {
+        margin-left: 16px;
+        color: #434343;
+    }
+
+    p {
+        margin-right: 16px;
+        color: #656565;
+        cursor: pointer;
+    }
+}
+
+.category-item {
+    position: relative;
+    width: 180px;
+    height: 220px; /* Set a fixed height for consistency */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 10px;
+
+    img {
+        width: 100%;
+        /* Make the image responsive to the container width */
+        height: 160px;
+        /* Adjust height to maintain aspect ratio */
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h4 {
+        margin-top: 10px;
+        // margin-bottom: 0;
+        font-size: 16px;
+        color: #434343;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap; /* Ensure long titles do not break layout */
+        width: 100%;
+    }
+}
+
+.product-item {
+    position: relative;
+    flex: 0 0 auto;
+    width: 180px;
+    /* Increase the width */
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .icon-container {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 1;
+
+        ion-icon {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    }
+
+    img {
+        width: 100%;
+        /* Make the image fill the container width */
+        height: 220px;
+        /* Adjust height */
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0px 15px 20px 0px rgba(0, 0, 0, 0.16);
+    }
+
+    h2,
+    p,
+    h6 {
+        margin-top: 10px;
+        margin-bottom: 0;
+        color: #434343;
+    }
+}
+
+.font-bold{
+    font-weight: bold;
+}

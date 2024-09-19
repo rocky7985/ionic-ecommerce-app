@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/home" routerDirection="back">
+        <img src='../../assets/back-dark.svg' />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="title-container">
+    <h1 class="title">My Orders</h1>
+  </div>
+
+  <div *ngIf="loadOrders" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!loadOrders && noOrders" class="no-orders-container">
+    <p>No Orders</p>
+  </div>
+
+  <div *ngIf="!loadOrders && !noOrders" class="order-items">
+    <ion-card mode="ios" *ngFor="let item of orderdata" (click)="navigateToItemDetails(item.Id)">
+      <ion-card-content>
+
+        <div class="item-img">
+          <img [src]='item.image' />
+        </div>
+
+        <div class="item-info">
+          <p>{{item.title}}</p>
+          <p>Size:{{item.size}}</p>
+          <p>Color:{{item.color}}</p>
+          <p>Quantity:{{item.quantity}}</p>
+          <p>Total Price:${{item.item_total_price}}</p>
+
+          <ion-button expand="block" class="main-button" routerlink="/home">Order Again</ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

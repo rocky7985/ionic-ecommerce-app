@@ -1,0 +1,39 @@
+.backbtn {
+    margin-left: 15px;
+}
+
+.title {
+    margin-top: 0;
+    color: #434343;
+}
+
+.card-info {
+    padding-top: 20px;
+    padding: 20px 15px 0; // Adjust padding to give space from the left
+
+    ion-item {
+        --padding-start: 0;
+        --border-color: #97979713;
+
+        ion-label {
+            color: #919191;
+            font-size: larger;
+        }
+
+        ion-input {
+            --color: #434343;
+        }
+    }
+
+
+    .addcard ion-button {
+        margin: 0;
+    }
+}
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; // Center the spinner vertically
+}

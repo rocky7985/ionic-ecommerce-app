@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/profile" routerDirection="back">
+        <img src='../../assets/back-dark.svg' />
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="title">Update Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="loadProfileData" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+  <div *ngIf="!loadProfileData" class="profile-info" #profileFormElement>
+    <form [formGroup]="updateForm" (ngSubmit)="getUpdatedData()">
+      <ion-item>
+        <ion-label position="floating">Name</ion-label>
+        <ion-input formControlName="name"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Phone</ion-label>
+        <ion-input formControlName="phone"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Address</ion-label>
+        <ion-input formControlName="address"></ion-input>
+      </ion-item>
+
+      <ion-button expand="full" class="update" type="update" [disabled]="!updateForm.valid">Update Profile</ion-button>
+    </form>
+  </div>
+</ion-content>

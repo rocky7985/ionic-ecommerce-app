@@ -1,0 +1,56 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/checkout" routerDirection="back">
+        <img src='../../assets/back-dark.svg' />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Add-Address</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content>
+  <div *ngIf="loadData" class="spinner-container">
+    <ion-spinner color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!loadData" class="card-info">
+    <div class="card-info">
+
+      <form [formGroup]="addaddress" (ngSubmit)="address()">
+
+        <ion-item>
+          <ion-label position="floating">Address</ion-label>
+          <ion-input formControlName="address"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Location</ion-label>
+          <div class="chip-group">
+            <ion-chip [outline]="addaddress.get('location')?.value !== 'Home'" color="tertiary"
+              (click)="setLocation('Home')">
+              <ion-label>Home</ion-label>
+            </ion-chip>
+            <ion-chip [outline]="addaddress.get('location')?.value !== 'Work'" color="tertiary"
+              (click)="setLocation('Work')">
+              <ion-label>Work</ion-label>
+            </ion-chip>
+            <ion-chip [outline]="addaddress.get('location')?.value !== 'Other'" color="tertiary"
+              (click)="setLocation('Other')">
+              <ion-label>Other</ion-label>
+            </ion-chip>
+          </div>
+          <!-- <ion-input formControlName="location"></ion-input> -->
+        </ion-item>
+
+        <div *ngIf="submittingAddress" class="spinner-container">
+          <ion-spinner color="primary"></ion-spinner>
+        </div>
+
+        <ion-button expand="full" class="addaddress" type="submit">Add Address</ion-button>
+        <!-- <ion-button expand="full" class="addaddress" type="submit" color = "warning" routerLink="/savedcards">Go to Saves Cards</ion-button> -->
+      </form>
+    </div>
+  </div>
+</ion-content>

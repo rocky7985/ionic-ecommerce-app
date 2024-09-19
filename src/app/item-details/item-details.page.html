@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="primary" class="backbtn" routerLink="/home" routerDirection="back">
+        <img src="../../assets/back-dark.svg" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="itemDetails">
+  <swiper-container slides-per-view="1" speed="500" pager="true" class="category-item">
+
+    <swiper-slide>
+      <img [src]="itemDetails.image" />
+    </swiper-slide>
+    <swiper-slide>
+      <img [src]="itemDetails.image" />
+    </swiper-slide>
+    <swiper-slide>
+      <img [src]="itemDetails.image" />
+    </swiper-slide>
+  </swiper-container>
+
+  <div class="ion-padding-vertical">
+    <h1 class="item-name">{{itemDetails.title}}</h1>
+
+    <h4 class="price">
+      ${{ itemDetails.price }}
+      <span class="real-price">${{ itemDetails.previous }}</span>
+    </h4>
+  </div>
+
+  <div class="seperator">
+    <hr>
+  </div>
+
+  <div class="description">
+    <h5>Description</h5>
+
+    <p>{{itemDetails.description}}</p>
+
+  </div>
+
+  <div class="seperator">
+    <hr>
+  </div>
+
+  <div class="ion-padding-vertical">
+    <h1 class="item-name">{{itemDetails.offers}}</h1>
+  </div>
+
+  <div class="seperator">
+    <hr>
+  </div>
+
+  <div class="variation">
+    <ion-segment (ionChange)="segmentChanged($event)" value="size">
+      <ion-segment-button value="size">
+        <ion-label>Select Size</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="color">
+        <ion-label>Select Color</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <div class="seperator">
+    <hr>
+  </div>
+
+  <div class="variation-selector">
+    <div class="sizes" [class.active-variation]="activeVariation == 'size'">
+
+      <div *ngFor="let size of availableSizes" [class.active]="selectedSize == size"
+        [class.disabled]="!isSizeAvailable(size)" (click)="changeSize(size)">
+        {{ size }}
+      </div>
+    </div>
+
+    <div class="colors" [class.active-variation]="activeVariation == 'color'">
+      <div *ngFor="let color of itemDetails.color" [class.active]="selectedColor==color" (click)="changeColor(color)">
+
+        {{color}}
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer *ngIf="dataLoaded">
+  <ion-row>
+    <ion-col size="6">
+      <ion-button *ngIf="!isAddedtoCart" expand="full" color="light" (click)="addtocart()"
+        [disabled]="!selectedSize || !selectedColor">Add to cart</ion-button>
+      <ion-button *ngIf="isAddedtoCart" expand="full" color="warning" (click)="goToCart()">Go to Cart</ion-button>
+    </ion-col>
+    <ion-col size="6">
+      <!-- <ion-button expand="full">Buy now</ion-button> -->
+      <ion-button expand="full" (click)="buy()">Buy now</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-footer>

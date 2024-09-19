@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button class="backbtn" routerLink="/welcome" routerDirection="back">
+        <img src="../../assets/back.svg" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="ion-padding container">
+    <h1>Login</h1>
+    <ion-spinner color="primary" *ngIf="loadProfileData"></ion-spinner>
+
+
+    <form [formGroup]="loginForm" (ngSubmit)="login()">
+
+      <div class="form-container">
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input formControlName="email"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Password</ion-label>
+          <ion-input [type]="showPassword ? 'text' : 'password'" formControlName="password"></ion-input>
+          <ion-icon slot="end" [name]="showPassword ? 'eye-outline' : 'eye-off-outline'"
+            (click)="toggleShowPassword()"></ion-icon>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-checkbox formControlName="rememberMe" slot="start"></ion-checkbox>
+          <ion-label>RememberMe</ion-label>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-button color="primary" fill="clear" routerLink="/forget-password" routerDirection="forward">Forgot
+            Password?</ion-button>
+        </ion-item>
+
+        <ion-button expand="block" class="main-button" type="submit" [disabled]="loginForm.invalid">Log in</ion-button>
+
+        <div class="sign-up">
+          Don't have an account? <ion-button color="dark" fill="clear" routerLink="/signup"
+            routerDirection="forward">Sign up</ion-button>
+        </div>
+      </div>
+    </form>
+  </div>
+</ion-content>

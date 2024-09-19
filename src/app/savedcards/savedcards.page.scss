@@ -1,0 +1,153 @@
+.icon-container {
+  position: absolute;
+  top: 60px;
+  /* Adjust according to the height of your header */
+  right: 16px;
+  /* Adjust spacing from the right edge */
+  z-index: 10;
+  /* Ensure the icon is above other elements */
+}
+
+ion-header {
+  position: relative;
+  /* Create a positioning context for the icon */
+}
+
+ion-content {
+  --padding-top: 80px;
+  --padding-bottom: 16px;
+  --padding-start: 26px;
+  --padding-end: 26px;
+  position: absolute;
+  /* Changed from absolute to relative */
+}
+
+.custom-icon {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* Center the spinner vertically */
+}
+
+.scrollable-card-items {
+  max-height: 290px;
+  /* Adjust height to show 2 cards at a time */
+  overflow-y: auto;
+  /* Enable scrolling for the cards */
+
+
+  // .cart-items {
+  margin-top: 10px;
+
+  /* Reduced margin to place the cards closer to the icon */
+  ion-card {
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+    margin-top: 20px;
+    /* Adjust margin to ensure space for the icon */
+
+    ion-card-content {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      /* Ensure positioning context for the button */
+
+      .item-info {
+        // position: relative;
+        flex-grow: 1;
+
+        h2 {
+          font-size: 16px;
+        }
+
+        p:nth-child(1) {
+          color: #434343;
+        }
+
+        p:nth-child(2) {
+          color: #919191;
+        }
+
+        p:nth-child(3) {
+          color: var(--ion-color-primary);
+        }
+      }
+    }
+  }
+
+  .address {
+    ion-item {
+      --padding-start: 0;
+      font-size: 18px;
+      color: #434343;
+
+      ion-badge {
+        width: 12px;
+        height: 12px;
+        padding: 0;
+        border-radius: 50%;
+      }
+    }
+  }
+
+  hr {
+    background: #97979713;
+  }
+
+  .cart-total {
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+
+      ion-label {
+        margin-right: 0;
+      }
+
+      ion-label:nth-child(1) {
+        color: #919191;
+      }
+
+      ion-label:nth-child(2) {
+        color: #434343;
+      }
+    }
+  }
+}
+
+ion-footer {
+  padding-left: 20px;
+  padding-right: 20px;
+
+  .main-button::after {
+    box-shadow: none !important;
+  }
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.card-header {
+  position: absolute;
+  top: 10px;
+  /* Adjust according to your preference */
+  right: 10px;
+  /* Adjust according to your preference */
+  z-index: 10;
+  /* Ensure the button is above other content */
+}
+
+.edit-button {
+  color: red;
+  font-weight: bold;
+  font-size: 24px;
+  margin-right: 8px;
+  cursor: pointer;
+}

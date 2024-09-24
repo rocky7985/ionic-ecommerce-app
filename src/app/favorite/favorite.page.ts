@@ -13,7 +13,8 @@ export class FavoritePage {
   favouriteData: any = [];
   loginUser: any = [];
   loadFavourites: boolean = true;
-  // postid: number;
+  page: number = 1;
+  loadMoreProducts: boolean = true;
 
   constructor(private util: UtilService, private router: Router) { }
 
@@ -28,22 +29,41 @@ export class FavoritePage {
     }
   }
 
-  favorite() {
-    this.favouriteData = [];
+  favorite(event?: any) {
     const token = this.loginUser.token;
-    const postData = { user_id: this.loginUser.id }; // Ensure user ID is sent
+    const postData = { user_id: this.loginUser.id, paged: this.page };
 
     this.util.sendData('favouriteData', postData, token).subscribe({
       next: (p: any) => {
         if (p.status == 'success') {
-          this.favouriteData = p.data;
+          const favourite = p.data;
           console.log('Favourite Data:', this.favouriteData);
-          this.loadFavourites = false;  // Turn off loading spinner
+          if (favourite.length == 0) {
+            this.loadMoreProducts = false;
+            event?.target.complete(); // Complete infinite scroll event
+            return;
+          }
+
+          this.favouriteData = [...this.favouriteData, ...favourite];
+          if (favourite.length < 6) {
+            this.loadMoreProducts = false;
+          }
+          else {
+            this.page++;
+          }
+          this.loadFavourites = false;
+          event?.target.complete(); // Complete infinite scroll event
+          console.log('Favourite Data:', this.favouriteData);
         }
         else {
           console.log('An error occurred. Try Again.')
-          this.loadFavourites = false;  // Turn off loading spinner
+          this.loadFavourites = false;
+          event?.target.complete(); // Complete infinite scroll in case of error
         }
+      }, error: (err) => {
+        console.log('Error loading favourites:', err);
+        this.loadFavourites = false;
+        event?.target.complete(); // Complete infinite scroll in case of error
       }
     });
   }
@@ -73,25 +93,31 @@ export class FavoritePage {
   // }
 
 
-  deleteFavourites(postid: number) {
+  deleteFavourites(event: Event, postid: number) {
+    event.stopPropagation();
     const token = this.loginUser.token;
     const postData = {
       user_id: this.loginUser.id,
       post_id: postid
-    }; // Ensure user ID is sent
-    this.loadFavourites = true; // Show spinner while deleting
+    };
+    this.loadFavourites = true;
 
     this.util.sendData('favourites', postData, token).subscribe({
       next: (p: any) => {
         if (p.status == 'success') {
           console.log('Item Removed from Favourites', postid);
-          this.favorite();
-          this.loadFavourites = false; // Hide spinner after reloading data
+          this.favouriteData = this.favouriteData.filter((item: any) => item.Id !== postid);
+          this.loadFavourites = false;
         }
         else {
           console.log('Failed to remove favourite.');
+          this.loadFavourites = false;
         }
       },
+      error: (err) => {
+        console.log('Error deleting favourite:', err);
+        this.loadFavourites = false; // Hide spinner in case of error
+      }
     });
   }
 

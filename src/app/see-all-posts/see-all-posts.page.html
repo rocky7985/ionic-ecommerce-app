@@ -34,10 +34,11 @@
   <div class="product-slider ion-padding-start" *ngIf="context == 'featured' && items.length>0">
     <ion-grid>
       <ion-row>
-        <ion-col size="6" class="ion-text-left" *ngFor="let product of items">
-          <ion-card (click)="navigateToItemDetails(product.Id)">
+        <ion-col size="6" class="ion-text-left" *ngFor="let product of items"
+          (click)="navigateToItemDetails(product.Id)">
+          <ion-card>
 
-            <div class="icon-container">
+            <div class="icon-container" (click)="addToFavourites($event, product.Id)">
               <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
                 [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
             </div>
@@ -57,9 +58,10 @@
   <div class="product-slider ion-padding-start" *ngIf="context == 'bestSell' && items.length>0">
     <ion-grid>
       <ion-row>
-        <ion-col size="6" class="ion-text-left" *ngFor="let product of items">
-          <ion-card (click)="navigateToItemDetails(product.Id)">
-            <div class="icon-container">
+        <ion-col size="6" class="ion-text-left" *ngFor="let product of items"
+          (click)="navigateToItemDetails(product.Id)">
+          <ion-card>
+            <div class="icon-container" (click)="addToFavourites($event, product.Id)">
               <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
                 [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
             </div>
@@ -76,9 +78,10 @@
   </div>
 
   <ion-infinite-scroll threshold="100px"
-  (ionInfinite)="context == 'categories' ? getCategories($event) : (context == 'featured' ? getFeaturedProducts($event) : getbestSell($event))"
-  *ngIf="loadMoreProducts">
-  <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data..."></ion-infinite-scroll-content>
-</ion-infinite-scroll>
+    (ionInfinite)="context == 'categories' ? getCategories($event) : (context == 'featured' ? getFeaturedProducts($event) : getbestSell($event))"
+    *ngIf="loadMoreProducts">
+    <ion-infinite-scroll-content loadingSpinner="bubbles"
+      loadingText="Loading more data..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>

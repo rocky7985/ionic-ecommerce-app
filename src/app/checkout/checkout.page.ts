@@ -281,11 +281,18 @@ export class CheckoutPage {
   buy() {
     if (this.selectedAddress) {
       const productIds = this.checkoutItems.map((item:any) => item.Id);
+      const sizes = this.checkoutItems.map((item:any) => item.size || 'NA');
+      const colors = this.checkoutItems.map((item:any) => item.color || 'NA');
+      const quantity = this.checkoutItems.map((item:any) => item.quantity);
+
       this.router.navigate(["/savedcards"], {
         queryParams: {
           selectedAddressId: this.selectedAddress.id,
           totalPrice: this.totalPrice, 
-          productIds: productIds.join(',')
+          productIds: productIds.join(','),
+          sizes: sizes.join(','),
+          colors: colors.join(','),
+          quantity: quantity.join(',')
         }
       });
     } else {

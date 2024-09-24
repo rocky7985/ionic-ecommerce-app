@@ -15,10 +15,10 @@ export class SeeAllPostsPage {
 
   public context: string;
   public items = [];
-  public loader = false;  // Added for loading state
+  public loader = false;
   public page = 1;
-  public limit = 6;
   public loadMoreProducts = true;
+  loginUser: any = [];
 
 
   constructor(
@@ -28,6 +28,7 @@ export class SeeAllPostsPage {
   ) { }
 
   ionViewWillEnter() {
+    this.getLoginUser();
     this.context = this.route.snapshot.paramMap.get('context');
     this.items = [];
     this.page = 1;
@@ -43,33 +44,53 @@ export class SeeAllPostsPage {
     }
   }
 
+  getLoginUser() {
+    let user = JSON.parse(localStorage.getItem('login'))
+    if (user != null) {
+      this.loginUser = user;
+    }
+  }
+
   getCategories(event?: any) {
     this.loader = true;
 
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getCategory', { page: this.page, limit: this.limit }, logindata).subscribe({
+    this.util.sendData('getCategory', { paged: this.page }, logindata).subscribe({
       next: (p: any) => {
-        const newItems = p.data.categories.map((category: string) => {
-          return {
-            name: category,
-            image: category === 'Womens' ? '../../assets/categories/category-1.png' : '../../assets/categories/category-2.png',
-            action: () => this.navigateToCategory(category)
-          };
-        });
-
-        this.items = [...this.items, ...newItems];
-        if (newItems.length < this.limit) {
+        const newItems = p.data.categories.map((category: string) => ({
+          // return {
+          name: category,
+          image: category == 'Womens'
+            ? '../../assets/categories/category-1.png'
+            : category == 'Mens'
+              ? '../../assets/categories/category-2.png'
+              : category == 'Kids'
+                ? '../../assets/categories/category-3.png'
+                : '../../assets/categories/unisex.png',
+          action: () => this.navigateToCategory(category)
+        }));
+        if (newItems.length == 0) {
           this.loadMoreProducts = false;
+          event?.target.complete(); // Complete infinite scroll event
+          return;
         }
 
-        this.page++;
+        this.items = [...this.items, ...newItems];
+        if (newItems.length < 6) {
+          this.loadMoreProducts = false;
+        }
+        else {
+          this.page++;
+        }
         this.loader = false;
         event?.target.complete();
+        console.log('Category:', this.items);
       },
       error: (err: any) => {
         console.log('Error', err);
         this.loader = false;
+        this.loadMoreProducts = false;
         event?.target.complete();
       }
     });
@@ -80,11 +101,14 @@ export class SeeAllPostsPage {
     this.loader = true;
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getShopData', { page: this.page, limit: this.limit }, logindata).subscribe({
+    this.util.sendData('getShopData', { paged: this.page }, logindata).subscribe({
       next: (p: any) => {
         const newItems = p.data;  // Assuming 'p.data' contains the products
-
-        // Array to hold the observable checks for favourites
+        if (newItems.length == 0) {
+          this.loadMoreProducts = false;
+          event?.target.complete(); // Complete infinite scroll event
+          return;
+        }
         const favouriteChecks = newItems.map((product: any) => {
           const data = {
             user_id: login.id,
@@ -101,10 +125,11 @@ export class SeeAllPostsPage {
         forkJoin(favouriteChecks).subscribe({
           next: () => {
             this.items = [...this.items, ...newItems];
-            if (newItems.length < this.limit) {
+            if (newItems.length < 6) {
               this.loadMoreProducts = false;
+            } else {
+              this.page++;
             }
-            this.page++;
             this.loader = false;  // Turn off loading spinner after all checks are done
             console.log('FeaturedProducts', this.items);
             event?.target.complete();
@@ -127,10 +152,15 @@ export class SeeAllPostsPage {
 
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getBestSell', { page: this.page, limit: this.limit }, logindata).subscribe({
+    this.util.sendData('getBestSell', { paged: this.page }, logindata).subscribe({
       next: (p: any) => {
         // if (p.status == 'success' && p.data) {
         const newItems = p.data;
+        if (newItems.length == 0) {
+          this.loadMoreProducts = false;
+          event?.target.complete(); // Complete infinite scroll event
+          return;
+        }
 
         // Array to hold the observable checks for favourites
         const favouriteChecks = newItems.map((product: any) => {
@@ -149,10 +179,12 @@ export class SeeAllPostsPage {
         forkJoin(favouriteChecks).subscribe({
           next: () => {
             this.items = [...this.items, ...newItems];
-            if (newItems.length < this.limit) {
+            if (newItems.length < 6) {
               this.loadMoreProducts = false;
             }
-            this.page++;
+            else {
+              this.page++;
+            }
             this.loader = false;  // Turn off loading spinner after all checks are done
             event?.target.complete();
             console.log('BestSell Products:', this.items);
@@ -180,4 +212,35 @@ export class SeeAllPostsPage {
 
   }
 
+  addToFavourites(event: Event, postid: number) {
+    event.stopPropagation(); // Prevent navigation
+    const token = this.loginUser.token;
+    const productIndex = this.items.findIndex((product: any) => product.Id == postid);
+
+    if (productIndex !== -1) {
+      const product = this.items[productIndex];
+      product.isFavourite = !product.isFavourite;
+
+      const data = {
+        user_id: this.loginUser.user_id,
+        post_id: postid
+      };
+
+      this.util.sendData('favourites', data, token).subscribe({
+        next: (response: any) => {
+          if (response.status == 'success') {
+            console.log(response.message);
+          }
+          else {
+            product.isFavourite = !product.isFavourite;
+            console.log('An Error Occurred. Try Again');
+          }
+        },
+        error: (err) => {
+          product.isFavourite = !product.isFavourite;
+          console.log('Error Occurred:', err);
+        }
+      });
+    }
+  }
 }

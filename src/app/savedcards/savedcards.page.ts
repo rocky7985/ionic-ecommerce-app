@@ -14,6 +14,9 @@ export class SavedcardsPage {
   cardData: any = [];
   selectedCards: any = null;
   productIds: number[] = []; // Array for product IDs
+  color: any[] = [];
+  size: any[] = [];
+  quantity:any[] = [];
   totaprice: any = 0;
   public loadCheckoutData = true;
   selectedAddressId: number;
@@ -41,9 +44,21 @@ export class SavedcardsPage {
       if (params['productIds']) {
         this.productIds = params['productIds'].split(',').map((id: any) => parseInt(id, 10));
       }
+      if (params['quantity']) {
+        this.quantity = params['quantity'].split(',').map((id: any) => parseInt(id, 10));
+      }
+      if (params['sizes']) {
+        this.size = params['sizes'].split(',');
+      }
+      if (params['colors']) {
+        this.color = params['colors'].split(',');
+      }
       console.log('Selected Address ID:', this.selectedAddressId);
       console.log('Total Price:', this.totaprice); // Log the totalPrice for debugging
       console.log('Product IDs:', this.productIds);
+      console.log('Product quantity:', this.quantity);
+      console.log('Product Colors:', this.color);
+      console.log('Product Size:', this.size);
     });
   }
 
@@ -116,7 +131,10 @@ export class SavedcardsPage {
       user_id: this.loginUser.user_id,
       card_id: this.selectedCards.card_num,
       post_ids: this.productIds,
-      address_id: this.selectedAddressId // Include the selected address ID
+      address_id: this.selectedAddressId,
+      color: this.color,
+      size: this.size,
+      quantity:this.quantity
     };
 
     this.util.sendData('payout', payload, token).subscribe({

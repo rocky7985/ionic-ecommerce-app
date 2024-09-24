@@ -5,12 +5,6 @@
         <img src='../../assets/back-dark.svg' />
       </ion-button>
     </ion-buttons>
-
-    <!-- <ion-buttons slot="end">
-      <ion-button class="notification">
-        <ion-icon name="notifications-outline" color="dark"></ion-icon>
-      </ion-button>
-    </ion-buttons> -->
   </ion-toolbar>
 </ion-header>
 
@@ -29,19 +23,24 @@
 
   <ion-grid *ngIf="!loadFavourites && favouriteData.length > 0">
     <ion-row>
-      <ion-col size="6" class="ion-text-left padding-left0" *ngFor="let product of favouriteData">
+      <ion-col size="6" class="ion-text-left padding-left0" *ngFor="let product of favouriteData" (click)="navigateToItemDetails(product.Id)">
         <div class="favorite-items">
 
           <!-- Red Heart Icon to remove from favourites -->
           <div class="icon-container">
-            <ion-icon name="heart" color="danger" (click)="deleteFavourites(product.Id)"></ion-icon>
+            <ion-icon name="heart" color="danger" (click)="deleteFavourites($event, product.Id)"></ion-icon>
           </div>
 
-          <img [src]="product.image" (click)="navigateToItemDetails(product.Id)" />
+          <img [src]="product.image"/>
           <p>{{product.title}}</p>
           <h6>${{product.price}}</h6>
         </div>
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="favorite($event)" *ngIf="loadMoreProducts">
+    <ion-infinite-scroll-content loadingSpinner="bubbles"
+      loadingText="Loading more data..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

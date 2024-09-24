@@ -137,7 +137,8 @@ export class HomePage {
         if (p.data.categories) {
           this.categories = [];
           this.originalCategories = this.categories;
-          p.data.categories.forEach((category: string) => {
+          const limitedCategories = p.data.categories.slice(0, 3);
+          limitedCategories.forEach((category: string) => {
 
             // Initialize categories array
             if (category == 'Womens') {
@@ -153,7 +154,20 @@ export class HomePage {
                 image: '../../assets/categories/category-2.png',
                 action: () => this.navigateToCategory('Mens')
               });
-
+            }
+            else if (category == 'Kids') {
+              this.categories.push({
+                name: 'Kids',
+                image: '../../assets/categories/category-3.png',
+                action: () => this.navigateToCategory('Kids')
+              });
+            }
+            else if (category == 'Unisex') {
+              this.categories.push({
+                name: 'Unisex',
+                image: '../../assets/categories/unisex.png',
+                action: () => this.navigateToCategory('Unisex')
+              });
             }
           });
           console.log('Categories', this.categories);
@@ -326,7 +340,8 @@ export class HomePage {
     return this.selectedFilter ? `Search your ${this.selectedFilter}` : 'Search Your Product';
   }
 
-  addToFavourites(postid: number) {
+  addToFavourites(event: Event, postid: number) {
+    event.stopPropagation();
     const token = this.loginUser.token;
     const productIndex = this.featuredProducts.findIndex((product: any) => product.Id == postid);
 

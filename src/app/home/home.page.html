@@ -50,15 +50,15 @@
 
   <swiper-container *ngIf="!loadingFeatured" slides-per-view="2" speed="500" space-between="10" pagination="true">
     <swiper-slide *ngFor="let product of featuredProducts">
-      <div class="product-item">
+      <div class="product-item" (click)="navigateToItemDetails(product.Id)">
 
-        <div class="icon-container" (click)="addToFavourites(product.Id)">
+        <div class="icon-container" (click)="addToFavourites($event, product.Id)">
           <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
             [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
         </div>
 
         <img [src]="product.image" />
-        <h2 (click)="navigateToItemDetails(product.Id)" class="font-bold">{{product.title}}</h2>
+        <h2 class="font-bold">{{product.title}}</h2>
         <p class="font-bold">${{ product.price }}</p>
         <h6 class="font-bold">{{ product.offers }}</h6>
       </div>
@@ -73,15 +73,15 @@
 
   <swiper-container *ngIf="!loadingBestSell" slides-per-view="2" speed="500" space-between="10" pagination="true">
     <swiper-slide *ngFor="let product of bestSellProducts">
-      <div class="product-item">
+      <div class="product-item" (click)="navigateToItemDetails(product.Id)">
 
-        <div class="icon-container" (click)="addToFavourites(product.Id)">
+        <div class="icon-container" (click)="addToFavourites($event, product.Id)">
           <ion-icon [name]="product.isFavourite ? 'heart' : 'heart-outline'"
             [color]="product.isFavourite ? 'danger' : 'medium'"></ion-icon>
         </div>
 
         <img [src]="product.image" />
-        <h2 (click)="navigateToItemDetails(product.Id)" class="font-bold">{{product.title}}</h2>
+        <h2 class="font-bold">{{product.title}}</h2>
         <p class="font-bold">${{ product.price }}</p>
         <h6 class="font-bold">{{ product.offers }}</h6>
       </div>

@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './item-details.page.html',
   styleUrls: ['./item-details.page.scss'],
 })
-export class ItemDetailsPage implements OnInit {
+export class ItemDetailsPage {
   selectedSize: any;
   selectedColor: any;
   activeVariation: string;
@@ -17,7 +17,9 @@ export class ItemDetailsPage implements OnInit {
   availableSizes = ['S', 'M', 'L', 'XL'];
   loginUser: any = [];
   isAddedtoCart = false;
-  dataLoaded: boolean = false;  // Track if the data has been loaded
+  dataLoaded: boolean = false;
+  page:number = 1;
+  loadMoreProducts:boolean=true;
 
 
   constructor(
@@ -31,14 +33,10 @@ export class ItemDetailsPage implements OnInit {
   ionViewWillEnter() {
     this.util.showLoading();
     this.getLoginUser();
-    this.getpost();
-
-  }
-
-  ngOnInit() {
     this.activeVariation = 'size';
     this.itemId = +this.route.snapshot.paramMap.get('id'); // Get the item ID from the route
-    // this.getpost();
+    console.log('Id:', this.itemId);
+    this.getpost();
   }
 
 
@@ -52,10 +50,12 @@ export class ItemDetailsPage implements OnInit {
   getpost() {
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getShopData', { post_id: this.itemId }, logindata).subscribe({
+    this.util.sendData('getSpecificData', { Id: this.itemId, user_id: login.id }, logindata).subscribe({
       next: (res: any) => {
         if (res.status == 'success') {
-          this.itemDetails = res.data.find((i: any) => i.Id == this.itemId);
+          this.itemDetails = res.data[0];
+          console.log('Post Id:', this.itemId);
+          console.log('ResData:', res.data);
           console.log('specific post', this.itemDetails);
         }
       }, error: (err: any) => {
@@ -141,8 +141,8 @@ export class ItemDetailsPage implements OnInit {
   }
 
   isSizeAvailable(size: any) {
-    return this.itemDetails && this.itemDetails.size.includes(size);
-    // return this.itemDetails && this.itemDetails.size && this.itemDetails.size.includes(size);
+    // return this.itemDetails && this.itemDetails.size.includes(size);
+    return this.itemDetails && Array.isArray(this.itemDetails.size) && this.itemDetails.size.includes(size);
 
   }
 

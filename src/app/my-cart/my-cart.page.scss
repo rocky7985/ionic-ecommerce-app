@@ -2,10 +2,6 @@
     margin-left: 15px;
 }
 
-.notification {
-    margin-right: 15px;
-}
-
 ion-content {
     --padding-top: 16px;
     --padding-bottom: 16px;
@@ -21,7 +17,8 @@ ion-content {
     width: 100%;
 }
 
-.cart-items {
+.cart-items,
+.wishlist-items {
     ion-card {
         margin-left: 0;
         margin-right: 0;
@@ -45,7 +42,6 @@ ion-content {
             }
 
             .item-info {
-
                 position: relative;
                 flex-grow: 1;
 
@@ -73,11 +69,8 @@ ion-content {
                     border-radius: 5px;
                     margin-top: 10px;
 
-                    ion-button {
+                    ion-chip {
                         --color: #565656;
-                        font-size: 16px;
-                        margin-left: 8px;
-                        margin-right: 8px;
                     }
 
                     ion-label {
@@ -98,6 +91,40 @@ ion-content {
     }
 }
 
+.wishlist-section {
+    margin-top: 50px; // Space between cart items and wishlist section
+
+    .wishlist-title {
+        font-size: 22px;
+        font-weight: bold;
+        color: var(--ion-color-tertiary);
+        padding: 15px 0;
+        text-align: center;
+        margin-bottom: 20px; // Add margin below the title to separate it from wishlist items
+    }
+
+    .wishlist-items {
+        ion-card {
+            margin-left: 0;
+            margin-right: 0;
+            border-radius: 0;
+            margin-bottom: 15px; // Add space between each wishlist card
+
+            ion-card-content {
+                display: flex;
+                position: relative;
+
+                .item-img {
+                    img {
+                        width: 80px;
+                        height: 80px;
+                    }
+                }
+            }
+        }
+    }
+}
+
 ion-footer {
     padding-left: 20px;
     padding-right: 20px;
@@ -105,10 +132,6 @@ ion-footer {
     .main-button::after {
         box-shadow: none !important;
     }
-}
-
-.font-bold {
-    font-weight: bold;
 }
 
 .spinner-container {
@@ -122,11 +145,11 @@ ion-footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+    height: calc(100% - 70px); // Adjust height to ensure there's enough space for the footer and the wishlist title
     text-align: center;
+    margin-bottom: 20px; // Increase space below the empty cart message
 }
 
-.empty-cart-message p {
-    font-size: 1.2em;
-    color: var(--ion-color-dark);
+.font-bold {
+    font-weight: bold;
 }

@@ -153,7 +153,9 @@ export class ItemDetailsPage {
       const data = {
         post_id: this.itemId,
         size: this.selectedSize,
-        color: this.selectedColor
+        color: this.selectedColor,
+        quantity: 1, // You can customize the quantity if needed
+        wishlist: 'NO' // Set wishlist to 'NO' when adding to cart
       };
 
       console.log('data', data);

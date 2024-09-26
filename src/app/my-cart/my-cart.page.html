@@ -18,15 +18,15 @@
 
 <ion-content fullscreen="true">
 
-  <div *ngIf="loadCartData" class="spinner-container">
+  <div *ngIf="loadCartData || isLoading" class="spinner-container">
     <ion-spinner color="primary"></ion-spinner>
   </div>
 
-  <div *ngIf="!loadCartData && cartItems.length === 0" class="empty-cart-message">
+  <div *ngIf="!loadCartData && cartItems.length == 0" class="empty-cart-message">
     <p>Cart Empty!</p>
   </div>
 
-  <div class="cart-items">
+  <div class="cart-items" *ngIf="!loadCartData && cartItems.length > 0">
     <ion-card mode="ios" *ngFor="let item of cartItems; let i = index">
       <ion-card-content>
         <div class="item-img">
@@ -47,6 +47,10 @@
             <ion-chip fill="clear" color="tertiary" (click)="increaseQuantity(item.Id, i)">+</ion-chip>
           </div>
 
+          <ion-chip fill="clear" color="warning" (click)="addToWishlist(item)">
+            <ion-label class="font-bold">Add To Wishlist</ion-label>
+          </ion-chip>
+
           <ion-icon name="trash-outline" (click)="deleteAlert(item.Id)" color="danger" fill="outline"
             class="delete-icon"></ion-icon>
           <ion-spinner color="primary" *ngIf="item.isLoading"></ion-spinner>
@@ -54,10 +58,34 @@
         </div>
       </ion-card-content>
     </ion-card>
-
-
-
   </div>
+
+  <div *ngIf="!loadCartData && wishlistData.length > 0" class="wishlist-section">
+    <ion-title class="wishlist-title">Wishlists</ion-title>
+    <div class="wishlist-items">
+      <ion-card mode="ios" *ngFor="let item of wishlistData">
+        <ion-card-content>
+          <div class="item-img">
+            <img [src]="item.image" />
+          </div>
+
+          <div class="item-info">
+            <h2 class="font-bold">{{ item.title }}</h2>
+            <p>${{ item.price }}</p>
+            <p>{{ item.color }}</p>
+            <p>{{ item.size }}</p>
+            <p>{{ item.quantity }}</p>
+
+            <ion-chip fill="clear" color="danger" (click)="removeWishlist(item)">
+              <ion-label class="font-bold">Move To Cart</ion-label>
+            </ion-chip>
+            <ion-spinner color="primary" *ngIf="isLoading"></ion-spinner>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
 </ion-content>
 <ion-footer translucent="true" class="ion-no-border" mode="md">
   <ion-toolbar color="translucent">

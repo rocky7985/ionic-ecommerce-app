@@ -14,17 +14,19 @@ export class MyCartPage {
   cartItems: any[] = [];
   loginUser: any = [];
   public loadCartData = true;
-  isLoading: boolean = true;
+  isLoading: boolean = false;
+  public loadWishlistData = true;
+  wishlistData: any = [];
 
   constructor(
     private util: UtilService,
     private router: Router // Inject Router
-
   ) { }
 
   ionViewWillEnter() {
     this.getLoginUser();
     this.getcartData();
+    this.getWishlist();
   }
 
   getLoginUser() {
@@ -36,18 +38,101 @@ export class MyCartPage {
   getcartData() {
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
+    this.loadCartData = true;
     this.util.sendData('inCartData', {}, logindata).subscribe({
       next: (p: any) => {
         if (p.status == 'success') {
           this.cartItems = p.data.map((item: any) => ({
             ...item,
-            unitPrice: item.price / item.quantity // Calculate and store the price per unit
+            unitPrice: item.price / item.quantity, // Calculate and store the price per unit
+            isAddedToWishlist: false,
+            isLoading: false
           }));
           console.log('cartItems:', this.cartItems);
         }
         this.loadCartData = false;
       }, error: () => {
         this.loadCartData = false;
+      }
+    });
+  }
+
+  addToWishlist(item: any) {
+    this.isLoading = true;
+    const token = this.loginUser.token;
+    const data = {
+      user_id: this.loginUser.id,
+      post_id: item.Id,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity
+    }
+    console.log('Data:', data);
+    this.util.sendData('wishlist', data, token).subscribe({
+      next: (p: any) => {
+        if (p.status == 'success') {
+          // Remove the item from the cart after it's added to the wishlist
+          const index = this.cartItems.findIndex(cartItem => cartItem.Id == item.Id);
+          if (index !== -1) {
+            this.cartItems.splice(index, 1);
+          }
+          this.getWishlist();
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.log('Error adding to wishlist:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  getWishlist() {
+    // const token = this.loginUser.token;
+    const data = { user_id: this.loginUser.id };
+    this.loadWishlistData = true;
+    this.util.sendData('getWishlist', data, this.loginUser.token).subscribe({
+      next: (p: any) => {
+        if (p.status == 'success' && p.data) {
+          this.wishlistData = p.data;
+          console.log('WishlistData:', this.wishlistData);
+        } else {
+          this.wishlistData = [];
+        }
+        this.loadWishlistData = false;
+      }, error: () => {
+        console.error('Error fetching wishlist data');
+        this.loadWishlistData = false;
+      }
+    });
+  }
+
+  removeWishlist(item: any) {
+    // this.isLoading = true;
+    const token = this.loginUser.token;
+    const data = {
+      user_id: this.loginUser.id,
+      post_id: item.post_id,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity
+    }
+    console.log('Data:', data);
+    this.util.sendData('remove_wishlist', data, token).subscribe({
+      next: (p: any) => {
+        if (p.status == 'success') {
+          // Remove the item from the cart after it's added to the wishlist
+          const index = this.wishlistData.findIndex((wishlist: any) => wishlist.Id == item.Id);
+          if (index !== -1) {
+            this.wishlistData.splice(index, 1);
+          }
+          this.getcartData();
+        }
+        // this.isLoading = false;
+      },
+      error: (err) => {
+        console.log('Error adding to wishlist:', err);
+        // this.isLoading = false;
       }
     });
   }
@@ -86,10 +171,12 @@ export class MyCartPage {
           if (response.status == 'success') {
 
             // Use slice to remove the item from the array
-            this.cartItems = [
-              ...this.cartItems.slice(0, index),
-              ...this.cartItems.slice(index + 1)
-            ];
+            // this.cartItems = [
+            //   ...this.cartItems.slice(0, index),
+            //   ...this.cartItems.slice(index + 1)
+            // ];
+            this.cartItems.splice(index, 1); // Remove the item from the cart
+            this.cartItems[index].isLoading = false;
           }
           else {
             console.log('Failed to delete item:', response.message);
@@ -104,7 +191,6 @@ export class MyCartPage {
         }
       });
     }
-
   }
 
   increaseQuantity(itemId: number, index: number) {

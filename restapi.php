@@ -388,24 +388,6 @@ class Custom_API extends WP_REST_Controller {
             }
         }
     }
-
-    public function search($data){
-        global $wpdb;
-        $param = $data-> get_params();
-        $this->isValidToken();
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-
-        if(empty($user_id)){
-            return $this-> errorResponse('Unauthorised', 'Unauthorised', 401);
-        }
-        else{
-                $valid_vars = array_merge( $valid_vars, array( 'queryByTitle' ) );
-                return $valid_vars;
-            
-        
-            add_filter( 'rest_query_vars', 'wpse_20160526_rest_query_vars', PHP_INT_MAX, 1 );
-        }
-    }
 	 
 	public function addcartData($data){
 	    global $wpdb;
@@ -816,15 +798,7 @@ class Custom_API extends WP_REST_Controller {
                 'paged'=> $paged,
                 's' => $search
             ) ,
-            array(
-                'key' => 'category',
-                'value'     => '$args',
-                'compare'   => 'LIKE'
-            ));
-            
-            
              
-            
             $posts = get_posts($args);
 
             $categories = array();

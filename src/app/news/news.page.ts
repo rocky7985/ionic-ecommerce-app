@@ -55,12 +55,6 @@ export class NewsPage {
   _handleReaderLoaded(event: ProgressEvent<FileReader>) {
     this.selectedImage = event.target?.result;
   }
-  // _handleReaderLoaded(readerEvt: ProgressEvent<FileReader>) {
-  //   const binaryString = readerEvt.target?.result as string; // Get the binary string result
-  //   this.base64textString = btoa(binaryString); // Convert to Base64
-  //   this.selectedImage = `data:image/jpeg;base64,${this.base64textString}`; // Set selectedImage to Base64 data URL
-  //   console.log(this.selectedImage); // Log the Base64 image for verification
-  // }
 
   addnews() {
     if (this.newsForm.valid) {

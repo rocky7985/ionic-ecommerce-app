@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>News</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-spinner color="primary" *ngIf="loadData"></ion-spinner>
+
+  <ion-grid>
+    <form [formGroup]="newsForm" (ngSubmit)="addnews()">
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label position="stacked">Title</ion-label>
+            <ion-input formControlName="title" placeholder="Enter news title"></ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label position="stacked">Content</ion-label>
+            <ion-textarea formControlName="content" placeholder="Enter news content"></ion-textarea>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-button expand="block" type="submit" [disabled]="newsForm.invalid">Add News</ion-button>
+        </ion-col>
+      </ion-row>
+    </form>
+  </ion-grid>
+</ion-content>

@@ -1,5 +1,17 @@
-.search {
+.search-bar-container {
     margin-bottom: 10px;
+    position: sticky;
+    /* Keeps the element stuck at the top when scrolled */
+    top: 0;
+    /* Keeps the element at the top of the page */
+    z-index: 100;
+    /* Ensure it appears on top of other content */
+    background-color: white;
+    /* Set background to avoid overlap transparency */
+    padding: 10px;
+    /* Adjust padding to match your design */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Optional: Add shadow for better visibility */
 
     ion-item {
         border-radius: 10px;
@@ -38,7 +50,8 @@
 .category-item {
     position: relative;
     width: 180px;
-    height: 220px; /* Set a fixed height for consistency */
+    height: 220px;
+    /* Set a fixed height for consistency */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -63,7 +76,8 @@
         text-align: center;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap; /* Ensure long titles do not break layout */
+        white-space: nowrap;
+        /* Ensure long titles do not break layout */
         width: 100%;
     }
 }
@@ -111,6 +125,6 @@
     }
 }
 
-.font-bold{
+.font-bold {
     font-weight: bold;
 }

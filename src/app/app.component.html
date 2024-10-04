@@ -35,6 +35,11 @@
                 <ion-label>Logout</ion-label>
               </ion-item>
             </ion-menu-toggle>
+            <ion-menu-toggle auto-hide="false">
+              <ion-item lines="none" (click)="navigate('/news', 7)" detail="false" class="ion-text-center" [class.selected]="selectedIndex == 7">
+                <ion-label>News</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
           </ion-list>
 
           <!-- Close Button -->

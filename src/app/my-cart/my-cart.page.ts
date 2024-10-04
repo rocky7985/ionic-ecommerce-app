@@ -17,10 +17,11 @@ export class MyCartPage {
   isLoading: boolean = false;
   public loadWishlistData = true;
   wishlistData: any = [];
+  selectedSegment: string = 'cart';
 
   constructor(
     private util: UtilService,
-    private router: Router // Inject Router
+    private router: Router
   ) { }
 
   ionViewWillEnter() {
@@ -35,6 +36,17 @@ export class MyCartPage {
       this.loginUser = user;
     }
   }
+
+  // Method to handle segment change
+  segmentChanged(event: any) {
+    const selectedValue = event.detail.value;
+    if (selectedValue === 'cart') {
+      this.getcartData();
+    } else if (selectedValue === 'wishlist') {
+      this.getWishlist();
+    }
+  }
+
   getcartData() {
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
@@ -57,7 +69,8 @@ export class MyCartPage {
     });
   }
 
-  addToWishlist(item: any) {
+  addToWishlist(item: any, event: Event) {
+    event.stopPropagation();
     this.isLoading = true;
     const token = this.loginUser.token;
     const data = {
@@ -107,8 +120,8 @@ export class MyCartPage {
     });
   }
 
-  removeWishlist(item: any) {
-    // this.isLoading = true;
+  moveToCart(item: any, event: Event) {
+    event.stopPropagation();
     const token = this.loginUser.token;
     const data = {
       user_id: this.loginUser.id,
@@ -118,7 +131,7 @@ export class MyCartPage {
       quantity: item.quantity
     }
     console.log('Data:', data);
-    this.util.sendData('remove_wishlist', data, token).subscribe({
+    this.util.sendData('move_to_cart', data, token).subscribe({
       next: (p: any) => {
         if (p.status == 'success') {
           // Remove the item from the cart after it's added to the wishlist
@@ -137,7 +150,56 @@ export class MyCartPage {
     });
   }
 
-  deleteAlert(itemId: number) {
+  deleteWishlistAlert(item: any, event: Event) {
+    event.stopPropagation();
+    this.util.presentAlert(
+      'Delete Item',
+      'Are you sure you want to delete the item from wishlist?',
+      [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Delete',
+          handler: () => {
+            this.removeWishlist(item);
+          },
+        },
+      ]
+    );
+  }
+
+  removeWishlist(item: any) {
+    const token = this.loginUser.token;
+    const data = {
+      user_id: this.loginUser.id,
+      post_id: item.post_id,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity
+    }
+    console.log('Data:', data);
+    this.util.sendData('delete_wishlist', data, token).subscribe({
+      next: (p: any) => {
+        if (p.status == 'success') {
+          // Remove the item from the cart after it's added to the wishlist
+          const index = this.wishlistData.findIndex((wishlist: any) => wishlist.post_id == item.Id);
+          if (index !== -1) {
+            this.wishlistData.splice(index, 1);
+          }
+          console.log('Item deleted from wishlist');
+          this.getWishlist();
+        }
+      },
+      error: (err) => {
+        console.log('Error deleting wishlist:', err);
+      }
+    });
+  }
+
+  deleteAlert(itemId: number, event: Event) {
+    event.stopPropagation();
     this.util.presentAlert(
       'Delete Item',
       'Are you sure you want to delete the item?',
@@ -262,4 +324,9 @@ export class MyCartPage {
       }
     });
   }
+
+  navigateToItemDetails(id: number) {
+    this.router.navigate(['/item-details', id]);
+  }
+
 }

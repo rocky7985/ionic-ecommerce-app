@@ -95,6 +95,10 @@ const routes: Routes = [
   {
     path: 'payment-success',
     loadChildren: () => import('./payment-success/payment-success.module').then( m => m.PaymentSuccessPageModule)
+  },
+  {
+    path: 'news',
+    loadChildren: () => import('./news/news.module').then( m => m.NewsPageModule)
   }
 ];
 

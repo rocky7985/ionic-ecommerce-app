@@ -10,19 +10,19 @@
 
 <ion-content>
 
-  <div class="search ion-padding">
+  <div class="search-bar-container">
     <ion-item lines="none">
-      <ion-input [placeholder]="getPlaceholder()" [(ngModel)]="searchPost" (ionChange)="search()"
-        (ionClear)="onClearSearch()"></ion-input>
+      <ion-input [placeholder]="getPlaceholder()" [(ngModel)]="searchPost"  (ionInput)="onSearchChange($event)"
+        clearInput></ion-input>
       <ion-icon name="search-outline" slot="start"></ion-icon>
       <ion-icon name="filter-outline" slot="end" (click)="presentPopover($event)"></ion-icon>
     </ion-item>
 
     <ion-popover #popover [isOpen]="isOpen" (didDismiss)="isOpen = false" [dismissOnSelect]="true">
       <ng-template>
-        <ion-item button (click)="onFilterChange('Featured')">Featured Products</ion-item>
-        <ion-item button (click)="onFilterChange('Categories')">Categories</ion-item>
-        <ion-item button (click)="onFilterChange('Best Sell')">Best Sell</ion-item>
+        <ion-item button (click)="onFilterChange('Featured'); isOpen = false">Featured Products</ion-item>
+        <ion-item button (click)="onFilterChange('Categories'); isOpen = false">Categories</ion-item>
+        <ion-item button (click)="onFilterChange('Best Sell'); isOpen = false">Best Sell</ion-item>
       </ng-template>
     </ion-popover>
   </div>

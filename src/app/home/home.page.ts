@@ -85,7 +85,10 @@ export class HomePage {
     this.loadingFeatured = true;  // Turn on loading spinner
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getShopData', {}, logindata).subscribe({
+    const params = {
+      search: this.searchPost.trim() // Send search parameter to the backend
+    };
+    this.util.sendData('getShopData', params, logindata).subscribe({
       next: (p: any) => {
         if (p.status == 'success') {
           this.featuredProducts = p.data.slice(0, 3);  // Assuming 'p.data' contains the products
@@ -132,49 +135,31 @@ export class HomePage {
     this.loadingCategories = true;  // Turn on loading spinner
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getCategory', {}, logindata).subscribe({
+    const params = {
+      search: this.searchPost.trim() // Send search parameter to the backend
+    };
+    this.util.sendData('getCategory', params, logindata).subscribe({
       next: (p: any) => {
-        if (p.data.categories) {
-          this.categories = [];
-          this.originalCategories = this.categories;
-          const limitedCategories = p.data.categories.slice(0, 3);
-          limitedCategories.forEach((category: string) => {
-
-            // Initialize categories array
-            if (category == 'Womens') {
-              this.categories.push({
-                name: 'Womens',
-                image: '../../assets/categories/category-1.png',
-                action: () => this.navigateToCategory('Womens')
-              });
-            }
-            else if (category == 'Mens') {
-              this.categories.push({
-                name: 'Mens',
-                image: '../../assets/categories/category-2.png',
-                action: () => this.navigateToCategory('Mens')
-              });
-            }
-            else if (category == 'Kids') {
-              this.categories.push({
-                name: 'Kids',
-                image: '../../assets/categories/category-3.png',
-                action: () => this.navigateToCategory('Kids')
-              });
-            }
-            else if (category == 'Unisex') {
-              this.categories.push({
-                name: 'Unisex',
-                image: '../../assets/categories/unisex.png',
-                action: () => this.navigateToCategory('Unisex')
-              });
-            }
+        if (p.status == 'success' && p.data) {
+          const categoriesFromBackend = p.data.categories;
+          // Map over the returned categories and apply necessary logic
+          const mappedCategories = categoriesFromBackend.map((category: any) => {
+            return {
+              name: category.title,
+              image: category.image,
+              action: () => this.navigateToCategory(category.title)
+            };
           });
+          this.categories = mappedCategories.slice(0, 3);
+          this.originalCategories = mappedCategories; // Store original categories for reset
           console.log('Categories', this.categories);
+        } else {
+          this.originalCategories = [];
         }
         this.loadingCategories = false;  // Turn off loading spinner
 
       }, error: () => {
+        this.categories = []; // Set to empty on error
         this.loadingCategories = false;  // Turn off loading spinner
       }
     });
@@ -184,7 +169,10 @@ export class HomePage {
     this.loadingBestSell = true;  // Turn on loading spinner
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getBestSell', {}, logindata).subscribe({
+    const params = {
+      search: this.searchPost.trim() // Send search parameter to the backend
+    };
+    this.util.sendData('getBestSell', params, logindata).subscribe({
       next: (p: any) => {
         if (p.status == 'success' && p.data) {
           this.bestSellProducts = p.data.slice(0, 3);
@@ -229,28 +217,29 @@ export class HomePage {
     this.router.navigate(['/see-all-posts', { context }]);
   }
 
-
   // search() {
-  //   let filterTask = [];
-  //   if (this.selectedFilter) {
-  //     if ('Featured') // checks all whitespaces and occurrences in the string
-  //     {
+  //   let filterTask: any = [];
+
+  //   switch (this.selectedFilter) {
+  //     case 'Featured':
   //       filterTask = this.featuredProducts;
-  //     }
-  //     else if ('Categories') // checks all whitespaces and occurrences in the string
-  //     {
+  //       break;
+  //     case 'Categories':
   //       filterTask = this.categories;
-  //     }
-  //     else if ('Best Sell') // checks all whitespaces and occurrences in the string
-  //     {
+  //       break;
+  //     case 'Best Sell':
   //       filterTask = this.bestSellProducts;
-  //     }
+  //       break;
+  //     default:
+  //       filterTask = [];
   //   }
+
   //   if (this.searchPost.trim() !== '') {
   //     const filterResults = filterTask.filter((item: any) =>
   //       (item.title && item.title.toLowerCase().includes(this.searchPost.toLowerCase())) ||
   //       (item.name && item.name.toLowerCase().includes(this.searchPost.toLowerCase()))
   //     );
+
   //     if (this.selectedFilter == 'Featured') {
   //       this.featuredProducts = filterResults;
   //     } else if (this.selectedFilter == 'Categories') {
@@ -261,8 +250,7 @@ export class HomePage {
 
   //     console.log('Search Results:', filterResults);
 
-  //   }
-  //   else {
+  //   } else {
   //     if (this.selectedFilter == 'Featured') {
   //       this.featuredProducts = this.originalFeatured;
   //     } else if (this.selectedFilter == 'Categories') {
@@ -274,7 +262,7 @@ export class HomePage {
   // }
 
   search() {
-    let filterTask: any = [];
+    let filterTask = [];
 
     switch (this.selectedFilter) {
       case 'Featured':
@@ -291,26 +279,50 @@ export class HomePage {
     }
 
     if (this.searchPost.trim() !== '') {
-      const filterResults = filterTask.filter((item: any) =>
-        (item.title && item.title.toLowerCase().includes(this.searchPost.toLowerCase())) ||
-        (item.name && item.name.toLowerCase().includes(this.searchPost.toLowerCase()))
-      );
+      const login = JSON.parse(localStorage.getItem('login'));
+      const logindata = login.token;
 
-      if (this.selectedFilter == 'Featured') {
-        this.featuredProducts = filterResults;
-      } else if (this.selectedFilter == 'Categories') {
-        this.categories = filterResults;
-      } else if (this.selectedFilter == 'Best Sell') {
-        this.bestSellProducts = filterResults;
+      // Send the search term and selected filter to the backend API
+      const searchParams = {
+        search: this.searchPost
+      };
+
+      switch (this.selectedFilter) {
+        case 'Featured':
+          this.util.sendData('getShopData', searchParams, logindata).subscribe((p: any) => {
+            this.featuredProducts = p.data.slice(0, 3);
+          });
+          break;
+        case 'Categories':
+          this.util.sendData('getCategory', searchParams, logindata).subscribe((p: any) => {
+            const categoriesFromBackend = p.data.categories;
+            // Map over the returned categories and apply necessary logic
+            const mappedCategories = categoriesFromBackend.map((category: any) => {
+              return {
+                name: category.title,
+                image: category.image,
+                action: () => this.navigateToCategory(category.title)
+              }
+            });
+            // Update categories with the filtered results
+            this.categories = mappedCategories;
+            console.log('Filtered Categories:', this.categories);
+          });
+          break;
+
+        case 'Best Sell':
+          this.util.sendData('getBestSell', searchParams, logindata).subscribe((p: any) => {
+            this.bestSellProducts = p.data.slice(0, 3);
+          });
+          break;
       }
-
-      console.log('Search Results:', filterResults);
-
     } else {
+      // Reset to original data if the search query is empty
       if (this.selectedFilter == 'Featured') {
         this.featuredProducts = this.originalFeatured;
       } else if (this.selectedFilter == 'Categories') {
         this.categories = this.originalCategories;
+        console.log('Original Categories:', this.categories);
       } else if (this.selectedFilter == 'Best Sell') {
         this.bestSellProducts = this.originalBestsell;
       }
@@ -329,15 +341,13 @@ export class HomePage {
     this.isOpen = true;
   }
 
-  onClearSearch() {
-    this.searchPost = '';
-    // this.featuredProducts = [...this.originalFeatured];
-    // this.categories = [...this.originalCategories];
-    // this.bestSellProducts = [...this.originalBestsell];
-  }
-
   getPlaceholder(): string {
     return this.selectedFilter ? `Search your ${this.selectedFilter}` : 'Search Your Product';
+  }
+
+  onSearchChange(event: any) {
+    this.searchPost = event.target.value;
+    this.search(); // Trigger search when the input changes
   }
 
   addToFavourites(event: Event, postid: number) {

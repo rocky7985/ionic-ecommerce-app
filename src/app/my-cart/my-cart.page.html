@@ -6,13 +6,15 @@
       </ion-buttons>
     </ion-buttons>
 
-    <ion-title class="centered-title">Cart</ion-title>
+    <ion-segment color="dark" [(ngModel)]="selectedSegment" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="cart" class="font-bold">
+        Cart
+      </ion-segment-button>
+      <ion-segment-button value="wishlist" class="font-bold">
+        Wishlist
+      </ion-segment-button>
+    </ion-segment>
 
-    <!-- <ion-buttons slot="end">
-      <ion-button class="notification">
-        <ion-icon name="notifications-outline" color="dark"></ion-icon>
-      </ion-button>
-    </ion-buttons> -->
   </ion-toolbar>
 </ion-header>
 
@@ -22,48 +24,14 @@
     <ion-spinner color="primary"></ion-spinner>
   </div>
 
-  <div *ngIf="!loadCartData && cartItems.length == 0" class="empty-cart-message">
-    <p>Cart Empty!</p>
-  </div>
+  <div *ngIf="selectedSegment == 'cart'">
 
-  <div class="cart-items" *ngIf="!loadCartData && cartItems.length > 0">
-    <ion-card mode="ios" *ngFor="let item of cartItems; let i = index">
-      <ion-card-content>
-        <div class="item-img">
-          <img [src]="item.image" />
-        </div>
+    <div *ngIf="!loadCartData && cartItems.length == 0" class="empty-cart-message">
+      <p>Cart Empty!</p>
+    </div>
 
-        <div class="item-info">
-          <h2 class="font-bold">{{ item.title }}</h2>
-          <p>${{ item.price }}</p>
-          <p>{{ item.color }}</p>
-          <p>{{ item.size }}</p>
-
-
-
-          <div class="qty-selector">
-            <ion-chip fill="clear" color="tertiary" (click)="decreaseQuantity(item.Id, i)">-</ion-chip>
-            <ion-label>{{item.quantity}}</ion-label>
-            <ion-chip fill="clear" color="tertiary" (click)="increaseQuantity(item.Id, i)">+</ion-chip>
-          </div>
-
-          <ion-chip fill="clear" color="warning" (click)="addToWishlist(item)">
-            <ion-label class="font-bold">Add To Wishlist</ion-label>
-          </ion-chip>
-
-          <ion-icon name="trash-outline" (click)="deleteAlert(item.Id)" color="danger" fill="outline"
-            class="delete-icon"></ion-icon>
-          <ion-spinner color="primary" *ngIf="item.isLoading"></ion-spinner>
-
-        </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
-
-  <div *ngIf="!loadCartData && wishlistData.length > 0" class="wishlist-section">
-    <ion-title class="wishlist-title">Wishlists</ion-title>
-    <div class="wishlist-items">
-      <ion-card mode="ios" *ngFor="let item of wishlistData">
+    <div class="cart-items" *ngIf="!loadCartData && cartItems.length > 0">
+      <ion-card mode="ios" *ngFor="let item of cartItems; let i = index" (click)="navigateToItemDetails(item.Id)">
         <ion-card-content>
           <div class="item-img">
             <img [src]="item.image" />
@@ -74,15 +42,61 @@
             <p>${{ item.price }}</p>
             <p>{{ item.color }}</p>
             <p>{{ item.size }}</p>
-            <p>{{ item.quantity }}</p>
 
-            <ion-chip fill="clear" color="danger" (click)="removeWishlist(item)">
-              <ion-label class="font-bold">Move To Cart</ion-label>
-            </ion-chip>
-            <ion-spinner color="primary" *ngIf="isLoading"></ion-spinner>
+
+
+            <div class="qty-selector">
+              <ion-chip fill="clear" color="tertiary" (click)="decreaseQuantity(item.Id, i)">-</ion-chip>
+              <ion-label>{{item.quantity}}</ion-label>
+              <ion-chip fill="clear" color="tertiary" (click)="increaseQuantity(item.Id, i)">+</ion-chip>
+            </div>
+
+            <ion-button color="warning" (click)="addToWishlist(item, $event)">
+              <ion-label class="font-bold">Add To Wishlist</ion-label>
+            </ion-button>
+
+            <ion-icon name="trash-outline" (click)="deleteAlert(item.Id, $event)" color="danger" fill="outline"
+              class="delete-icon"></ion-icon>
+            <ion-spinner color="primary" *ngIf="item.isLoading"></ion-spinner>
+
           </div>
         </ion-card-content>
       </ion-card>
+    </div>
+  </div>
+
+  <div *ngIf="selectedSegment == 'wishlist'">
+
+    <div *ngIf="!loadCartData && wishlistData.length == 0" class="empty-cart-message">
+      <p>Wishlist Empty!</p>
+    </div>
+
+    <div *ngIf="!loadCartData && wishlistData.length > 0" class="wishlist-section">
+      <!-- <ion-title class="wishlist-title">Wishlists</ion-title> -->
+      <div class="wishlist-items">
+        <ion-card mode="ios" *ngFor="let item of wishlistData" (click)="navigateToItemDetails(item.post_id)">
+          <ion-card-content>
+            <div class="item-img">
+              <img [src]="item.image" />
+            </div>
+
+            <div class="item-info">
+              <h2 class="font-bold">{{ item.title }}</h2>
+              <p>${{ item.price }}</p>
+              <p>{{ item.color }}</p>
+              <p>{{ item.size }}</p>
+              <p>{{ item.quantity }}</p>
+
+              <ion-button color="tertiary" (click)="moveToCart(item, $event)">
+                <ion-label class="font-bold">Move To Cart</ion-label>
+              </ion-button>
+              <ion-icon name="trash-outline" (click)="deleteWishlistAlert(item, $event)" color="danger" fill="outline"
+                class="delete-icon"></ion-icon>
+              <ion-spinner color="primary" *ngIf="isLoading"></ion-spinner>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
     </div>
   </div>
 

@@ -56,36 +56,38 @@ export class SeeAllPostsPage {
 
     const login = JSON.parse(localStorage.getItem('login'));
     const logindata = login.token;
-    this.util.sendData('getCategory', { paged: this.page }, logindata).subscribe({
+    const search = ''; // Assuming you want to implement search later
+    this.util.sendData('getCategory', { paged: this.page, search }, logindata).subscribe({
       next: (p: any) => {
-        const newItems = p.data.categories.map((category: string) => ({
-          // return {
-          name: category,
-          image: category == 'Womens'
-            ? '../../assets/categories/category-1.png'
-            : category == 'Mens'
-              ? '../../assets/categories/category-2.png'
-              : category == 'Kids'
-                ? '../../assets/categories/category-3.png'
-                : '../../assets/categories/unisex.png',
-          action: () => this.navigateToCategory(category)
-        }));
-        if (newItems.length == 0) {
-          this.loadMoreProducts = false;
-          event?.target.complete(); // Complete infinite scroll event
-          return;
-        }
+        if (p.status == 'success' && p.data) {
+          const newItems = p.data.categories.map((category: any) => ({
+            name: category.name,
+            image: category.image, // Fallback to a default image
+            action: () => this.navigateToCategory(category.name)
+          }));
+          if (newItems.length == 0) {
+            this.loadMoreProducts = false;
+            event?.target.complete(); // Complete infinite scroll event
+            return;
+          }
 
-        this.items = [...this.items, ...newItems];
-        if (newItems.length < 6) {
-          this.loadMoreProducts = false;
+          this.items = [...this.items, ...newItems];
+          if (newItems.length < 6) {
+            this.loadMoreProducts = false;
+          }
+          else {
+            this.page++;
+          }
+          this.loader = false;
+          event?.target.complete();
+          console.log('Category:', this.items);
         }
         else {
-          this.page++;
+          this.loadMoreProducts = false;
+          this.loader = false;
+          event?.target.complete();
+          console.error('Error retrieving categories:', p.message);
         }
-        this.loader = false;
-        event?.target.complete();
-        console.log('Category:', this.items);
       },
       error: (err: any) => {
         console.log('Error', err);

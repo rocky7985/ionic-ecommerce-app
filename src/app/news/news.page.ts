@@ -12,8 +12,9 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 export class NewsPage {
   newsForm: FormGroup;
   loginUser: any = [];
-  // newsData: any = [];
   public loadData = false;
+  selectedImage: string | ArrayBuffer | null = null;
+  // base64textString: string | null = null;
 
   constructor(
     private util: UtilService,
@@ -22,6 +23,7 @@ export class NewsPage {
     this.newsForm = new FormGroup({
       title: new FormControl('', Validators.required),
       content: new FormControl('', Validators.required),
+      featured_image: new FormControl(null),
     });
   }
 
@@ -36,12 +38,37 @@ export class NewsPage {
     }
   }
 
+  handleFileSelect(evt: Event) {
+    const files = (evt.target as HTMLInputElement).files;
+    if (files && files[0]) {
+      const file = files[0];
+      var reader = new FileReader();
+
+      reader.onload = this._handleReaderLoaded.bind(this);
+
+      // reader.readAsBinaryString(file);
+      reader.readAsDataURL(file);
+
+    }
+  }
+
+  _handleReaderLoaded(event: ProgressEvent<FileReader>) {
+    this.selectedImage = event.target?.result;
+  }
+  // _handleReaderLoaded(readerEvt: ProgressEvent<FileReader>) {
+  //   const binaryString = readerEvt.target?.result as string; // Get the binary string result
+  //   this.base64textString = btoa(binaryString); // Convert to Base64
+  //   this.selectedImage = `data:image/jpeg;base64,${this.base64textString}`; // Set selectedImage to Base64 data URL
+  //   console.log(this.selectedImage); // Log the Base64 image for verification
+  // }
+
   addnews() {
     if (this.newsForm.valid) {
       this.loadData = true;
       const data = {
         post_title: this.newsForm.value.title,
-        post_content: this.newsForm.value.content
+        post_content: this.newsForm.value.content,
+        featured_image: this.selectedImage
       };
       const token = this.loginUser.token;
       this.util.sendData('newsfeed', data, token).subscribe({
@@ -50,6 +77,7 @@ export class NewsPage {
             this.loadData = false;
             this.util.presentToast('News post added successfully');
             this.newsForm.reset();
+            this.selectedImage = null;
           }
           else {
             this.loadData = false;
@@ -64,6 +92,10 @@ export class NewsPage {
     } else {
       console.log('Please fill in all required fields');
     }
+  }
+
+  navToAllnews(){
+    this.router.navigate(['/view-news']);
   }
 
 }

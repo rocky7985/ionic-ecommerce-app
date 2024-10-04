@@ -1,5 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
+    <ion-icon name="arrow-back-outline" routerLink="/home" routerDirection="back"></ion-icon>
     <ion-title>News</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -27,7 +28,16 @@
       </ion-row>
       <ion-row>
         <ion-col>
+          <ion-item>
+            <ion-label position="stacked">Featured Image</ion-label>
+            <input type="file" (change)="handleFileSelect($event)" accept="image/*" />
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
           <ion-button expand="block" type="submit" [disabled]="newsForm.invalid">Add News</ion-button>
+          <ion-button (click)="navToAllnews()">View News</ion-button>
         </ion-col>
       </ion-row>
     </form>

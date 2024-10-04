@@ -1,0 +1,34 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-icon name="arrow-back-outline" routerLink="/news" routerDirection="back"></ion-icon>
+    <ion-title>View News</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  
+  <div>
+    <ion-spinner color="primary" *ngIf="loadData"></ion-spinner>
+  </div>
+
+  <ion-card *ngFor="let news of newsData">
+    <ion-card-header>
+      <ion-card-title>{{ news.post_title }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <img [src]="news.featured_image" alt="News Image" />
+      <p>Description:{{ news.post_content }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMoreNews($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more news...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <ng-template #noData>
+    <ion-item>
+      <ion-label>No news available.</ion-label>
+    </ion-item>
+  </ng-template>
+</ion-content>

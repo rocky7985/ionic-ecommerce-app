@@ -38,6 +38,7 @@ class Custom_API extends WP_REST_Controller {
         }
         /*------- End: Validate Token Section -------*/
 	}
+    
 	private function successResponse($message='',$data=array(),$total = array()){ 
         $response =array();
         $response['status'] = "success";
@@ -48,17 +49,19 @@ class Custom_API extends WP_REST_Controller {
         }
         return new WP_REST_Response($response, 200);  
     }
-     public function errorResponse($message='',$type='ERROR' , $statusCode = 400){
+     
+    public function errorResponse($message='',$type='ERROR' , $statusCode = 400){
         $response = array();
         $response['status'] = "error";
         $response['error_type'] = $type;
         $response['message'] =$message;
         return new WP_REST_Response($response, $statusCode); 
     }
+
     public function register_routes(){  
 		$namespace = $this->api_namespace . $this->api_version;
 		
-	    $privateItems = array('getShopData', 'getSpecificData', 'addcartData', 'wishlist', 'getWishlist', 'move_to_cart', 'delete_wishlist', 'checkItemInCart', 'inCartData', 'getCategory', 'getPostByCategory', 'getBestSell', 'deleteCartItem', 'doCheckout', 'getUserInfo', 'updateUserInfo', 'addcard', 'savedcards', 'updatecardinfo', 'deletecard', 'addaddress', 'savedaddress', 'delete_address', 'update_address', 'payout', 'orders', 'favourites', 'checkFavourite', 'favouriteData'); //Api Name  and use to token
+	    $privateItems = array('getShopData', 'getSpecificData', 'addcartData', 'wishlist', 'getWishlist', 'move_to_cart', 'delete_wishlist', 'checkItemInCart', 'inCartData', 'getCategory', 'getPostByCategory', 'getBestSell', 'deleteCartItem', 'doCheckout', 'getUserInfo', 'updateUserInfo', 'addcard', 'savedcards', 'updatecardinfo', 'deletecard', 'addaddress', 'savedaddress', 'delete_address', 'update_address', 'payout', 'orders', 'favourites', 'checkFavourite', 'favouriteData', 'newsfeed', 'getNewsFeed'); //Api Name  and use to token
 	    $publicItems  = array('register', 'forgetPassword', 'verifyOtp', 'resetPassword'); //no needs for token 
 		
 		
@@ -80,6 +83,7 @@ class Custom_API extends WP_REST_Controller {
 	    	);
 		}
 	}
+
 	public function init(){
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
         // add_action('rest_api_init', 'add_custom_headers');
@@ -95,6 +99,7 @@ class Custom_API extends WP_REST_Controller {
         }, 15 );
      
     }
+
     public function register($request){
         global $wpdb;
         $param = $request->get_params();
@@ -157,11 +162,11 @@ class Custom_API extends WP_REST_Controller {
             return $this->errorResponse('Something went wrong. Please try again later.', $user);
         }
     }
-
-
+    
     private function isValidToken(){
     	$this->user_id  = $this->getUserIdByToken($this->user_token);
     }
+
     public function getUserIdByToken($token){
         $decoded_array = array();
         $user_id = 0;
@@ -182,6 +187,7 @@ class Custom_API extends WP_REST_Controller {
             return false;
         }
     }
+
     public function isUserExists($user){
         global $wpdb;
         $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $wpdb->users WHERE ID = %d", $user));
@@ -256,27 +262,24 @@ class Custom_API extends WP_REST_Controller {
         if(empty($user_id) && empty($entered_otp)){
             return $this-> errorResponse('User ID and OTP are required.', 'Invalid input', 400);
         }
-        // else{
 
-            $otp_entry = $wpdb->get_var($wpdb->prepare("SELECT otp FROM forget_password WHERE user_id = %d", $user_id));
-            // print_r($otp_entry);die;
-            // Check if the entered OTP matches the stored OTP
-            if ($otp_entry != $entered_otp) {
-                return $this->errorResponse('Invalid OTP. Please try again.');
-            }
+        $otp_entry = $wpdb->get_var($wpdb->prepare("SELECT otp FROM forget_password WHERE user_id = %d", $user_id));
+        // Check if the entered OTP matches the stored OTP
+        if ($otp_entry != $entered_otp) {
+            return $this->errorResponse('Invalid OTP. Please try again.');
+        }
         
-            // Fetch the user's email
-            $user = get_user_by('ID', $user_id);
-            if (!$user) {
-                return $this->errorResponse('User not found.');
-            }
+        // Fetch the user's email
+        $user = get_user_by('ID', $user_id);
+        if (!$user) {
+            return $this->errorResponse('User not found.');
+        }
 
-            // OTP is valid, delete it after successful verification
-            $wpdb->delete('forget_password', ['user_id' => $user_id]);
+        // OTP is valid, delete it after successful verification
+        $wpdb->delete('forget_password', ['user_id' => $user_id]);
 
-            // Return success response with the user's email
-            return $this->successResponse('OTP verified successfully.', ['user_email' => $user->user_email]);
-        // }
+        // Return success response with the user's email
+        return $this->successResponse('OTP verified successfully.', ['user_email' => $user->user_email]);
     }
 
     public function resetPassword($request){
@@ -388,395 +391,6 @@ class Custom_API extends WP_REST_Controller {
             }
         }
     }
-	 
-	public function addcartData($data){
-	    global $wpdb;
-	    $param = $data->get_params();
-	    $this->isValidToken();
-	    $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-	   
-	   
-		if (empty($user_id)) {
-		   return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-		   
-		}else{
-		    $post_id = intval($param['post_id']);
-            $quantity = isset($param['quantity']) ? intval($param['quantity']) : 1;
-
-            $size = $param['size'];
-            $color = $param['color'];
-			
-		    // Check if the product is already in the cart
-            $cart_item = $wpdb->get_row($wpdb->prepare("SELECT * FROM cartdata WHERE user_id = %d AND post_id = %d AND color = %s AND size = %s" ,$user_id, $post_id, $color, $size));
-
-		    if($cart_item){
-                // If product exists, update the quantity
-                $updated = $wpdb->update('cartdata', 
-                    array('quantity' => $cart_item->quantity + $quantity), 
-                    array('user_id' => $user_id, 'post_id' => $post_id, 'color' => $color, 'size' => $size)
-                );
-                return $this->successResponse('Cart updated successfully', $updated);
-		    }else {
-		        // Add the product to the cart
-			    $inserted = $wpdb->insert('cartdata', array(
-				    'user_id' => $user_id,
-				    'post_id' => $post_id,
-                    'size' => $size,
-                    'color' => $color,
-                    'quantity' => $quantity,
-                ));
-			    return $this->successResponse('Added to cart successfully', $inserted);
-		    }
-        }
-    }
-    
-	public function checkItemInCart($data) {
-        global $wpdb;
-        $param = $data->get_params();
-        $this->isValidToken();
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-    
-        if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        } else {
-            $post_id = intval($param['post_id']);
-    
-            // Check if the product is already in the cart
-            $cart_item = $wpdb->get_row($wpdb->prepare("SELECT * FROM cartdata WHERE user_id = %d AND post_id = %d", $user_id, $post_id));
-    
-            if ($cart_item) {
-                return $this->successResponse('Item already in cart', true);
-            } else {
-                return $this->successResponse('Item not in cart', false);
-            }
-        }
-    }
-	   
-	public function inCartData($data){
-        global $wpdb;
-        $param = $data->get_params();
-        $this->isValidToken();
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-           
-        if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        } else {
-            $incart_items = $wpdb->get_results($wpdb->prepare("SELECT * FROM cartdata WHERE user_id = %d", $user_id));
-    
-            if (empty($incart_items)) {
-                return $this->successResponse('No items in cart for this user.');
-            }
-            $post_details = array();
-    
-            foreach ($incart_items as $item) {
-                $post_id = $item->post_id;
-                $post_data = get_post($post_id);
-                $quantity = $item->quantity;
-                $price = get_field('price', $post_data->ID) * $quantity; // Adjusted price
-                $color = $item->color;
-                $size = $item->size;
-    
-                if ($post_data) {           
-                    $post_details[] = array(
-                        'user_id' => $user_id,
-                        'image' => get_the_post_thumbnail_url($post_data->ID, 'full'),
-                        'Id' => $post_data->ID,
-                        'title' => $post_data->post_title,
-                        'description' => get_field('description', $post_data->ID),
-                        'price' => $price,
-                        'offers' => get_field('offers', $post_data->ID),
-                        'age' => get_field('age', $post_data->ID),
-                        'size' => $size,
-                        'previous' => get_field('previous', $post_data->ID),
-                        'color' => $color,
-                        'quantity' => $quantity
-                    );
-                }
-            }
-            return $this->successResponse('Data retrieved successfully', $post_details);
-        }
-    }    
-
-    public function wishlist($data){
-        global $wpdb;
-        $params = $data->get_params();
-		$this->isValidToken();
-	    $user_id = !empty($this->user_id) ? $this->user_id : $params['user_id'];
-        $post_id = $params['post_id'];
-        $color = $params['color'];
-        $size = $params['size'];
-        $quantity = $params['quantity'];
-		   
-	    if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        }
-		else{
-            $existing_wishlist = $wpdb->get_row($wpdb->prepare(
-                "SELECT * FROM wishlist WHERE user_id = %d AND post_id = %d AND color = %s AND size = %s", 
-                $user_id, $post_id, $color, $size
-            ));
-            
-            if(empty($existing_wishlist)){
-                $inserted = $wpdb->insert('wishlist', 
-                    array(
-                        'user_id' => $user_id,
-                        'post_id' => $post_id,
-                        'size' => $size,
-                        'color' => $color,
-                        'quantity' => $quantity
-                    ),
-                    array('%d', '%d', '%s', '%s', '%d')
-                );
-                if (!$inserted) {
-                    return $this->errorResponse('Failed to add item to wishlist');
-                }
-            }
-            $wpdb->delete('cartdata', array(
-                'user_id' => $user_id,
-                'post_id' => $post_id,
-                'color' => $color,
-                'size' => $size
-            ), array('%d', '%d', '%s', '%s'));
-            return $this->successResponse('Item added to wishlist and removed from cart successfully');
-        }
-    }
-
-    public function getWishlist($data) {
-        global $wpdb;
-        $param = $data->get_params(); // Get the parameters from the request
-        $this->isValidToken(); // Validate the token
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-          
-        if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        }
-
-        $wishlist_items = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM wishlist WHERE user_id = %d", $user_id
-        ));
-
-        if (empty($wishlist_items)) {
-            return $this->successResponse('No items in wishlist for this user.');
-        }
-
-        $wishlist_details = array();
-        foreach ($wishlist_items as $item) {
-            $post_data = get_post($item->post_id);
-            if ($post_data) {
-                $wishlist_details[] = array(
-                    'user_id' => $user_id,
-                    'post_id' => $post_data->ID,
-                    'title' => $post_data->post_title,
-                    'color' => $item->color,
-                    'size' => $item->size,
-                    'quantity' => $item->quantity,
-                    'image' => get_the_post_thumbnail_url($post_data->ID, 'full'),
-                    'description' => get_field('description', $post_data->ID),
-                    'price' => get_field('price', $post_data->ID),
-                    'offers' => get_field('offers', $post_data->ID)
-                );
-            }
-        }
-        return $this->successResponse('Wishlist data retrieved successfully', $wishlist_details);
-    }
-
-    public function move_to_cart($data){
-        global $wpdb;
-        $param= $data-> get_params();
-        $this->isValidToken();
-        $user_id=!empty($this->user_id) ? $this->user_id : $param['user_id'];
-        $post_id = $param['post_id'];
-        $color = $param['color'];
-        $size = $param['size'];
-        $quantity = $param['quantity'];
-        
-        if(empty($user_id)){
-            return $this->errorResponse('Unauthorised', 'Unauthorised', 401);
-        }
-        else{
-            $wishlist_items = $wpdb->get_row($wpdb->prepare("SELECT * FROM wishlist WHERE user_id = %d AND post_id = %d AND size = %s AND color = %s AND quantity = %d",
-                $user_id, $post_id, $size, $color, $quantity
-            ));
-            if(!empty($wishlist_items)){
-                $inserted = $wpdb->insert('cartdata',
-                    array(
-                        'user_id' => $user_id,
-                        'post_id' => $post_id,
-                        'color' => $color,
-                        'size' => $size,
-                        'quantity'=> $quantity
-                    ),
-                    array('%d', '%d', '%s', '%s', '%d')
-                );
-                if (!$inserted) {
-                    return $this->errorResponse('Failed to add item to cart');
-                }
-            
-                $deleted = $wpdb->delete('wishlist',
-                    array(
-                        'user_id' => $user_id,
-                        'post_id' => $post_id,
-                        'color' => $color,
-                        'size' => $size,
-                        'quantity' => $quantity
-                    ),
-                    array('%d', '%d', '%s', '%s', '%d')
-                );
-                if ($deleted) {
-                    return $this->successResponse('Item added to cart and removed from wishlist successfully');
-                } else {
-                    return $this->errorResponse('Failed to remove item from wishlist');
-                }
-            }
-            else{
-                return $this->errorResponse('Item not found in Wishlist');
-            }
-        }
-    }
-
-    public function delete_wishlist($data){
-        global $wpdb;
-        $param = $request->get_params();
-        $this-> isValidToken();
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-        $post_id = $param['post_id'];
-        $color = $param['color'];
-        $size = $param['size'];
-        $quantity = $param['quantity'];
-
-        if(empty($user_id)){
-            return $this->errorResponse('Unauthorised', 'Unauthorised', 401);
-        }
-        else{
-            $existing_wishlist = $wpdb->get_row($wpdb->prepare("SELECT * FROM wishlist WHERE user_id = %d AND post_id = %d AND size = %s AND color = %s AND quantity =%d", 
-                $user_id, $post_id, $size, $color, $quantity
-            ));
-            if(!empty($existing_wishlist)){
-                $deleted = $wpdb->delete('wishlist',
-                    array(
-                        'user_id' => $user_id,
-                        'post_id' => $post_id,
-                        'color' => $color,
-                        'size' => $size,
-                        'quantity' => $quantity
-                    ),
-                    array(
-                        '%d', '%d', '%s', '%s', '%d'
-                    )
-                );
-                if ($deleted) {
-                    return $this->successResponse('Item removed from wishlist successfully');
-                } else {
-                    return $this->errorResponse('Failed to remove item from wishlist');
-                }
-            }
-            else{
-                return $this->errorResponse('Item not found in wishlist');
-            }
-        }
-    }
-
-    public function doCheckout($request){
-        global $wpdb;
-        $param = $request->get_params();
-		$this->isValidToken();
-	    $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-		   
-	    if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        }
-		else{
-            $post_id = isset($param['post_id']) ? intval($param['post_id']) : null; 
-            $size = isset($param['size']) ? sanitize_text_field($param['size']) : null; 
-            $color = isset($param['color']) ? sanitize_text_field($param['color']) : null;     
-            $quantity = isset($param['quantity']) ? intval($param['quantity']) : null; 
-            
-            // Modify query to get only the specific item when post_id is passed
-            $query = "SELECT * FROM cartdata WHERE user_id = %d";
-            $query_params = [$user_id];
-
-            if ($post_id) {
-                $query .= " AND post_id = %d";
-                $query_params[] = $post_id;
-            }
-            if ($quantity) {
-                $query .= " AND quantity = %d";
-                $query_params[] = $quantity;
-            }
-            if ($size) {
-                $query .= " AND size = %s";
-                $query_params[] = $size;
-            }
-    
-            if ($color) {
-                $query .= " AND color = %s";
-                $query_params[] = $color;
-            }
-            $incart_items = $wpdb->get_results($wpdb->prepare($query, ...$query_params));
-
-            if(empty($incart_items)){
-                return $this->errorResponse('No items in cart for this user.');
-            }
-            
-            $post_details = array();
-            $totalPrice = 0;         
-            foreach ($incart_items as $item) {
-                $post_id = $item->post_id;
-                $post_data = get_post($post_id);
-                $quantity = $item->quantity;
-                $price = get_field('price', $post_data->ID); // Individual item price
-                $item_total_price = $price * $quantity; // Calculate total price for the item
-                $totalPrice += $item_total_price; // Add to the total cart price
-        
-                if($post_data){           
-                    $post_details[] = array(
-                        'user_id' => $user_id, // Adding user_id to the post details
-                        'image' => get_the_post_thumbnail_url($post_data->ID, 'full'),
-                        'Id' => $post_data->ID,
-                        'title' => $post_data->post_title,
-                        'description' => get_field('description', $post_data->ID),
-                        'price' => $price, // Original price per item
-                        'item_total_price' => $item_total_price, // Total price for this item based on quantity
-                        'offers' => get_field('offers', $post_data->ID),
-                        'age' => get_field('age', $post_data->ID),
-                        'size' => $item->size,
-                        'previous' => get_field('previous', $post_data->ID),
-                        'color' => $item->color,
-                        'quantity' => $quantity
-                    );
-                }
-            }
-
-            $checkout_details = array(
-                'cart_items' => $post_details,
-                'totalPrice' => $totalPrice 
-            );
-            return $this->successResponse('Checkout data retrieved successfully', $checkout_details);
-        }
-    }
-    
-    public function deleteCartItem($request) {
-        global $wpdb;
-        $param = $request->get_params();
-        $this->isValidToken();
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-    
-        if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        } else {
-            $post_id = intval($param['post_id']);
-            $deleted = $wpdb->delete('cartdata', array(
-                'user_id' => $user_id,
-                'post_id' => $post_id
-            ));
-    
-            if ($deleted) {
-                return $this->successResponse('Item removed from cart successfully.');
-            } else {
-                return $this->errorResponse('Failed to remove item from cart.');
-            }
-        }
-    }
 
     public function getCategory($request) {
         global $wpdb;
@@ -791,22 +405,58 @@ class Custom_API extends WP_REST_Controller {
             $paged = !empty($param['paged']) ? intval($param['paged']) : 1;
             $search = trim($param['search']);
 
-            $args = get_posts(array(
+            $arr = array(
                 'post_type' => 'shop_11',
-                'post_status' => 'publish' ,  
+                'post_status' => 'publish',
                 'posts_per_page' => -1,
-                'paged'=> $paged,
-                's' => $search
-            ) ,
-             
-            $posts = get_posts($args);
-
+                'paged' => $paged,
+            );
+            
+            if (!empty($search)) {
+                $arr['meta_query'] = array(
+                   array(
+                        'key' => 'category',
+                        'value' => $search,  
+                        'compare' => 'LIKE'
+                    ),
+                );
+            }            
+            // Fetch posts
+            $args = get_posts($arr);            
             $categories = array();
+            $uniqueCategories = array(); // To track unique categories
             if(count($args)){
                 foreach($args as $arg){
                     $category = get_field('category', $arg->ID);
-                    if (!in_array($category, $categories)) {
-                        $categories[]=$category;
+                    if (!in_array($category, $uniqueCategories)) {
+                        $categoryData = array('name' => $category);
+                        $uniqueCategories[] = $category; // Add to unique categories
+
+                        switch (strtolower($category)) {
+                            case 'womens':
+                                $categoryData['title'] = 'Womens';
+                                $categoryData['image'] = 'http://localhost/wordpressdoc/wordpress/wp-content/uploads/2024/09/category-1.png';
+                                break;
+                            case 'mens':
+                                $categoryData['title'] = 'Mens';
+                                $categoryData['image'] = 'http://localhost/wordpressdoc/wordpress/wp-content/uploads/2024/09/category-2.png';
+                                break;
+                            case 'kids':
+                                $categoryData['title'] = 'Kids';
+                                $categoryData['image'] = 'http://localhost/wordpressdoc/wordpress/wp-content/uploads/2024/09/category-3.png';
+                                break;
+                            case 'unisex':
+                                $categoryData['title'] = 'Unisex';
+                                $categoryData['image'] = 'http://localhost/wordpressdoc/wordpress/wp-content/uploads/2024/09/unisex.png';
+                                break;
+                            default:
+                            // If no match, provide a default image and title
+                            $categoryData['title'] = 'Other';
+                            $categoryData['image'] = 'http://localhost/wordpressdoc/wordpress/wp-content/uploads/2024/09/download-12.jpg';
+                            break;
+                        }
+    
+                        $categories[]=$categoryData;
                     }
                 }
             }
@@ -984,6 +634,492 @@ class Custom_API extends WP_REST_Controller {
             update_user_meta($user_id, 'address', $updated_data['address']);
 
             return $this->successResponse('Profile Data updated successfully', $this->getProfile($user_id));
+        }
+    }
+
+    public function favourites($request){ 
+        global $wpdb;
+        $param = $request->get_params();
+        $this->isValidToken();
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+        $post_id = $param['post_id'];  
+        
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        }
+        else{
+            $existing = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM favourites WHERE user_id = %d AND post_id = %d", $user_id, $post_id));
+            if($existing == 0){
+                $arr =  array(
+                    'user_id' => $user_id,
+                    'post_id' => $post_id,            
+                );
+                $inserted = $wpdb->insert('favourites', $arr);
+                   
+                if($inserted){
+                    return $this->successResponse('Favourite Added successfully', $arr);
+                }
+            }
+            else{
+                // Remove from favourites
+                $deleted = $wpdb->delete('favourites', array('user_id' => $user_id, 'post_id' => $post_id));
+                if($deleted) {
+                    return $this->successResponse('Favourite Removed successfully');
+                }
+            }
+        }
+        return $this->errorResponse('Failed to update favourites', 'Failed to update favourites', 500);
+    }
+
+    public function checkFavourite($request) {
+        global $wpdb;
+        $param = $request->get_params();
+        $this->isValidToken();
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+        $post_id = $param['post_id'];  
+        
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        }
+        else{
+            $existing = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM favourites WHERE user_id = %d AND post_id = %d", $user_id, $post_id));
+            if($existing > 0){
+            return $this->successResponse('Product is in favourites');
+            } else {
+             return $this->successResponse('Product is not in favourites');
+            }
+        }
+    }
+
+    public function favouriteData($request){
+        global $wpdb;
+        $param = $request->get_params();
+        $this->isValidToken();
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];        
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        }
+        else{
+            $paged = !empty($param['paged']) ? intval($param['paged']) : 1;
+            $posts_per_page = 6;
+            $offset = ($paged - 1) * $posts_per_page;
+
+            $favourite = $wpdb->get_results($wpdb->prepare("SELECT * FROM favourites WHERE user_id = %d LIMIT %d OFFSET %d", $user_id, $posts_per_page, $offset));
+            $favourite_post_data = array();
+            if($favourite){
+		        foreach ($favourite as $item) {
+                    $post_id = $item->post_id;
+                    $post_data = get_post($post_id);
+                    if($post_data){
+                        $favourite_post_data [] = array(
+                            'image' => get_the_post_thumbnail_url($post_data->ID,'full'),
+                            'Id' => $post_data->ID,
+                            'title' =>$post_data->post_title,
+                            'description' =>get_field('description',$post_data->ID),
+                            'price' => get_field('price',$post_data->ID),
+                            'offers' => get_field('offers',$post_data->ID),
+                            'age' => get_field('age',$post_data->ID),
+                            'size' => get_field('size', $post_data->ID),
+                            'previous' => get_field('previous', $post_data->ID),
+                            'color' => get_field('color',$post_data->ID),
+                            'best_sell' => get_field('best_sell',$post_data->ID),
+                        );
+                    }
+                }
+                return $this->successResponse('Favourites Retrieved successfully', $favourite_post_data);
+            } 
+            else {
+                return $this->successResponse('No favourites found', []);
+            }
+        }
+    }
+	 
+	public function addcartData($data){
+	    global $wpdb;
+	    $param = $data->get_params();
+	    $this->isValidToken();
+	    $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+	   
+	   
+		if (empty($user_id)) {
+		   return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+		   
+		}else{
+		    $post_id = intval($param['post_id']);
+            $quantity = isset($param['quantity']) ? intval($param['quantity']) : 1;
+
+            $size = $param['size'];
+            $color = $param['color'];
+			
+		    // Check if the product is already in the cart
+            $cart_item = $wpdb->get_row($wpdb->prepare("SELECT * FROM cartdata WHERE user_id = %d AND post_id = %d AND color = %s AND size = %s" ,$user_id, $post_id, $color, $size));
+
+		    if($cart_item){
+                // If product exists, update the quantity
+                $updated = $wpdb->update('cartdata', 
+                    array('quantity' => $cart_item->quantity + $quantity), 
+                    array('user_id' => $user_id, 'post_id' => $post_id, 'color' => $color, 'size' => $size)
+                );
+                return $this->successResponse('Cart updated successfully', $updated);
+		    }else {
+		        // Add the product to the cart
+			    $inserted = $wpdb->insert('cartdata', array(
+				    'user_id' => $user_id,
+				    'post_id' => $post_id,
+                    'size' => $size,
+                    'color' => $color,
+                    'quantity' => $quantity,
+                ));
+			    return $this->successResponse('Added to cart successfully', $inserted);
+		    }
+        }
+    }
+    
+	public function checkItemInCart($data) {
+        global $wpdb;
+        $param = $data->get_params();
+        $this->isValidToken();
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+    
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        } else {
+            $post_id = intval($param['post_id']);
+    
+            // Check if the product is already in the cart
+            $cart_item = $wpdb->get_row($wpdb->prepare("SELECT * FROM cartdata WHERE user_id = %d AND post_id = %d", $user_id, $post_id));
+    
+            if ($cart_item) {
+                return $this->successResponse('Item already in cart', true);
+            } else {
+                return $this->successResponse('Item not in cart', false);
+            }
+        }
+    }
+	   
+	public function inCartData($data){
+        global $wpdb;
+        $param = $data->get_params();
+        $this->isValidToken();
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+           
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        } else {
+            $incart_items = $wpdb->get_results($wpdb->prepare("SELECT * FROM cartdata WHERE user_id = %d", $user_id));
+    
+            if (empty($incart_items)) {
+                return $this->successResponse('No items in cart for this user.');
+            }
+            $post_details = array();
+    
+            foreach ($incart_items as $item) {
+                $post_id = $item->post_id;
+                $post_data = get_post($post_id);
+                $quantity = $item->quantity;
+                $price = get_field('price', $post_data->ID) * $quantity; // Adjusted price
+                $color = $item->color;
+                $size = $item->size;
+    
+                if ($post_data) {           
+                    $post_details[] = array(
+                        'user_id' => $user_id,
+                        'image' => get_the_post_thumbnail_url($post_data->ID, 'full'),
+                        'Id' => $post_data->ID,
+                        'title' => $post_data->post_title,
+                        'description' => get_field('description', $post_data->ID),
+                        'price' => $price,
+                        'offers' => get_field('offers', $post_data->ID),
+                        'age' => get_field('age', $post_data->ID),
+                        'size' => $size,
+                        'previous' => get_field('previous', $post_data->ID),
+                        'color' => $color,
+                        'quantity' => $quantity
+                    );
+                }
+            }
+            return $this->successResponse('Data retrieved successfully', $post_details);
+        }
+    } 
+    
+    public function deleteCartItem($request) {
+        global $wpdb;
+        $param = $request->get_params();
+        $this->isValidToken();
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+    
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        } else {
+            $post_id = intval($param['post_id']);
+            $deleted = $wpdb->delete('cartdata', array(
+                'user_id' => $user_id,
+                'post_id' => $post_id
+            ));
+    
+            if ($deleted) {
+                return $this->successResponse('Item removed from cart successfully.');
+            } else {
+                return $this->errorResponse('Failed to remove item from cart.');
+            }
+        }
+    }
+
+    public function wishlist($data){
+        global $wpdb;
+        $params = $data->get_params();
+		$this->isValidToken();
+	    $user_id = !empty($this->user_id) ? $this->user_id : $params['user_id'];
+        $post_id = $params['post_id'];
+        $color = $params['color'];
+        $size = $params['size'];
+        $quantity = $params['quantity'];
+		   
+	    if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        }
+		else{
+            $existing_wishlist = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM wishlist WHERE user_id = %d AND post_id = %d AND color = %s AND size = %s", 
+                $user_id, $post_id, $color, $size
+            ));
+            
+            if(empty($existing_wishlist)){
+                $inserted = $wpdb->insert('wishlist', 
+                    array(
+                        'user_id' => $user_id,
+                        'post_id' => $post_id,
+                        'size' => $size,
+                        'color' => $color,
+                        'quantity' => $quantity
+                    ),
+                    array('%d', '%d', '%s', '%s', '%d')
+                );
+                if (!$inserted) {
+                    return $this->errorResponse('Failed to add item to wishlist');
+                }
+            }
+            $wpdb->delete('cartdata', array(
+                'user_id' => $user_id,
+                'post_id' => $post_id,
+                'color' => $color,
+                'size' => $size
+            ), array('%d', '%d', '%s', '%s'));
+            return $this->successResponse('Item added to wishlist and removed from cart successfully');
+        }
+    }
+
+    public function getWishlist($data) {
+        global $wpdb;
+        $param = $data->get_params(); // Get the parameters from the request
+        $this->isValidToken(); // Validate the token
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+          
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        }
+
+        $wishlist_items = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM wishlist WHERE user_id = %d", $user_id
+        ));
+
+        if (empty($wishlist_items)) {
+            return $this->successResponse('No items in wishlist for this user.');
+        }
+
+        $wishlist_details = array();
+        foreach ($wishlist_items as $item) {
+            $post_data = get_post($item->post_id);
+            if ($post_data) {
+                $wishlist_details[] = array(
+                    'user_id' => $user_id,
+                    'post_id' => $post_data->ID,
+                    'title' => $post_data->post_title,
+                    'color' => $item->color,
+                    'size' => $item->size,
+                    'quantity' => $item->quantity,
+                    'image' => get_the_post_thumbnail_url($post_data->ID, 'full'),
+                    'description' => get_field('description', $post_data->ID),
+                    'price' => get_field('price', $post_data->ID),
+                    'offers' => get_field('offers', $post_data->ID)
+                );
+            }
+        }
+        return $this->successResponse('Wishlist data retrieved successfully', $wishlist_details);
+    }
+
+    public function move_to_cart($data){
+        global $wpdb;
+        $param= $data-> get_params();
+        $this->isValidToken();
+        $user_id=!empty($this->user_id) ? $this->user_id : $param['user_id'];
+        $post_id = $param['post_id'];
+        $color = $param['color'];
+        $size = $param['size'];
+        $quantity = $param['quantity'];
+        
+        if(empty($user_id)){
+            return $this->errorResponse('Unauthorised', 'Unauthorised', 401);
+        }
+        else{
+            $wishlist_items = $wpdb->get_row($wpdb->prepare("SELECT * FROM wishlist WHERE user_id = %d AND post_id = %d AND size = %s AND color = %s AND quantity = %d",
+                $user_id, $post_id, $size, $color, $quantity
+            ));
+            if(!empty($wishlist_items)){
+                $inserted = $wpdb->insert('cartdata',
+                    array(
+                        'user_id' => $user_id,
+                        'post_id' => $post_id,
+                        'color' => $color,
+                        'size' => $size,
+                        'quantity'=> $quantity
+                    ),
+                    array('%d', '%d', '%s', '%s', '%d')
+                );
+                if (!$inserted) {
+                    return $this->errorResponse('Failed to add item to cart');
+                }
+            
+                $deleted = $wpdb->delete('wishlist',
+                    array(
+                        'user_id' => $user_id,
+                        'post_id' => $post_id,
+                        'color' => $color,
+                        'size' => $size,
+                        'quantity' => $quantity
+                    ),
+                    array('%d', '%d', '%s', '%s', '%d')
+                );
+                if ($deleted) {
+                    return $this->successResponse('Item added to cart and removed from wishlist successfully');
+                } else {
+                    return $this->errorResponse('Failed to remove item from wishlist');
+                }
+            }
+            else{
+                return $this->errorResponse('Item not found in Wishlist');
+            }
+        }
+    }
+
+    public function delete_wishlist($data){
+        global $wpdb;
+        $param = $data->get_params();
+        $this-> isValidToken();
+        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+        $post_id = $param['post_id'];
+        $color = $param['color'];
+        $size = $param['size'];
+        $quantity = $param['quantity'];
+
+        if(empty($user_id)){
+            return $this->errorResponse('Unauthorised', 'Unauthorised', 401);
+        }
+        else{
+            $existing_wishlist = $wpdb->get_row($wpdb->prepare("SELECT * FROM wishlist WHERE user_id = %d AND post_id = %d AND size = %s AND color = %s AND quantity =%d", 
+                $user_id, $post_id, $size, $color, $quantity
+            ));
+            if(!empty($existing_wishlist)){
+                $deleted = $wpdb->delete('wishlist',
+                    array(
+                        'user_id' => $user_id,
+                        'post_id' => $post_id,
+                        'color' => $color,
+                        'size' => $size,
+                        'quantity' => $quantity
+                    ),
+                    array(
+                        '%d', '%d', '%s', '%s', '%d'
+                    )
+                );
+                if ($deleted) {
+                    return $this->successResponse('Item removed from wishlist successfully');
+                } else {
+                    return $this->errorResponse('Failed to remove item from wishlist');
+                }
+            }
+            else{
+                return $this->errorResponse('Item not found in wishlist');
+            }
+        }
+    }
+
+    public function doCheckout($request){
+        global $wpdb;
+        $param = $request->get_params();
+		$this->isValidToken();
+	    $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
+		   
+	    if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        }
+		else{
+            $post_id = isset($param['post_id']) ? intval($param['post_id']) : null; 
+            $size = isset($param['size']) ? sanitize_text_field($param['size']) : null; 
+            $color = isset($param['color']) ? sanitize_text_field($param['color']) : null;     
+            $quantity = isset($param['quantity']) ? intval($param['quantity']) : null; 
+            
+            // Modify query to get only the specific item when post_id is passed
+            $query = "SELECT * FROM cartdata WHERE user_id = %d";
+            $query_params = [$user_id];
+
+            if ($post_id) {
+                $query .= " AND post_id = %d";
+                $query_params[] = $post_id;
+            }
+            if ($quantity) {
+                $query .= " AND quantity = %d";
+                $query_params[] = $quantity;
+            }
+            if ($size) {
+                $query .= " AND size = %s";
+                $query_params[] = $size;
+            }
+    
+            if ($color) {
+                $query .= " AND color = %s";
+                $query_params[] = $color;
+            }
+            $incart_items = $wpdb->get_results($wpdb->prepare($query, ...$query_params));
+
+            if(empty($incart_items)){
+                return $this->errorResponse('No items in cart for this user.');
+            }
+            
+            $post_details = array();
+            $totalPrice = 0;         
+            foreach ($incart_items as $item) {
+                $post_id = $item->post_id;
+                $post_data = get_post($post_id);
+                $quantity = $item->quantity;
+                $price = get_field('price', $post_data->ID); // Individual item price
+                $item_total_price = $price * $quantity; // Calculate total price for the item
+                $totalPrice += $item_total_price; // Add to the total cart price
+        
+                if($post_data){           
+                    $post_details[] = array(
+                        'user_id' => $user_id, // Adding user_id to the post details
+                        'image' => get_the_post_thumbnail_url($post_data->ID, 'full'),
+                        'Id' => $post_data->ID,
+                        'title' => $post_data->post_title,
+                        'description' => get_field('description', $post_data->ID),
+                        'price' => $price, // Original price per item
+                        'item_total_price' => $item_total_price, // Total price for this item based on quantity
+                        'offers' => get_field('offers', $post_data->ID),
+                        'age' => get_field('age', $post_data->ID),
+                        'size' => $item->size,
+                        'previous' => get_field('previous', $post_data->ID),
+                        'color' => $item->color,
+                        'quantity' => $quantity
+                    );
+                }
+            }
+
+            $checkout_details = array(
+                'cart_items' => $post_details,
+                'totalPrice' => $totalPrice 
+            );
+            return $this->successResponse('Checkout data retrieved successfully', $checkout_details);
         }
     }
 
@@ -1362,9 +1498,6 @@ class Custom_API extends WP_REST_Controller {
                         $quantity = floatval($quantities[$index]);
                         $size = $sizes[$index];
                         $color = $colors[$index];
-                        // $quantity = $wpdb->get_var($wpdb->prepare("SELECT quantity FROM cartdata WHERE post_id = %d AND user_id = %d", $post_id, $user_id));
-                        // $size = $wpdb->get_var($wpdb->prepare("SELECT size FROM cartdata WHERE post_id = %d AND user_id = %d", $post_id, $user_id));
-                        // $color = $wpdb->get_var($wpdb->prepare("SELECT color FROM cartdata WHERE post_id = %d AND user_id = %d", $post_id, $user_id));
                         $price = floatval(get_field('price', $post_item->ID));
                         $item_total_price = $price * $quantity; 
         
@@ -1391,104 +1524,107 @@ class Custom_API extends WP_REST_Controller {
             }
             return $this->successResponse('Order Details retrieved successfully.', $order_details);
         }
-    }
-
-    public function favourites($request){ 
+    } 
+    
+    public function newsfeed($data){
         global $wpdb;
-        $param = $request->get_params();
+        $param = $data->get_params();
         $this->isValidToken();
         $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-        $post_id = $param['post_id'];  
+       
+        if (empty($user_id)) {
+            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
+        } 
+        else{
+            $my_post = array(
+	            'post_title'    => $param['post_title'],
+	            'post_content'  => $param['post_content'],
+	            'post_status'   => 'publish',
+	            'post_author'   => $user_id,
+                'post_type'      => 'news',
+
+            );
         
-        if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        }
-        else{
-            $existing = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM favourites WHERE user_id = %d AND post_id = %d", $user_id, $post_id));
-            if($existing == 0){
-                $arr =  array(
-                    'user_id' => $user_id,
-                    'post_id' => $post_id,            
-                );
-                $inserted = $wpdb->insert('favourites', $arr);
-                   
-                if($inserted){
-                    return $this->successResponse('Favourite Added successfully', $arr);
-                }
-            }
-            else{
-                // Remove from favourites
-                $deleted = $wpdb->delete('favourites', array('user_id' => $user_id, 'post_id' => $post_id));
-                if($deleted) {
-                    return $this->successResponse('Favourite Removed successfully');
-                }
-            }
-        }
-        return $this->errorResponse('Failed to update favourites', 'Failed to update favourites', 500);
-    }
-
-    public function checkFavourite($request) {
-        global $wpdb;
-        $param = $request->get_params();
-        $this->isValidToken();
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];
-        $post_id = $param['post_id'];  
-        
-        if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        }
-        else{
-            $existing = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM favourites WHERE user_id = %d AND post_id = %d", $user_id, $post_id));
-            if($existing > 0){
-            return $this->successResponse('Product is in favourites');
-            } else {
-             return $this->successResponse('Product is not in favourites');
-            }
-        }
-    }
-
-    public function favouriteData($request){
-        global $wpdb;
-        $param = $request->get_params();
-        $this->isValidToken();
-        $user_id = !empty($this->user_id) ? $this->user_id : $param['user_id'];        
-        if (empty($user_id)) {
-            return $this->errorResponse('Unauthorized', 'Unauthorized', 401);
-        }
-        else{
-            $paged = !empty($param['paged']) ? intval($param['paged']) : 1;
-            $posts_per_page = 6;
-            $offset = ($paged - 1) * $posts_per_page;
-
-            $favourite = $wpdb->get_results($wpdb->prepare("SELECT * FROM favourites WHERE user_id = %d LIMIT %d OFFSET %d", $user_id, $posts_per_page, $offset));
-            $favourite_post_data = array();
-            if($favourite){
-		        foreach ($favourite as $item) {
-                    $post_id = $item->post_id;
-                    $post_data = get_post($post_id);
-                    if($post_data){
-                        $favourite_post_data [] = array(
-                            'image' => get_the_post_thumbnail_url($post_data->ID,'full'),
-                            'Id' => $post_data->ID,
-                            'title' =>$post_data->post_title,
-                            'description' =>get_field('description',$post_data->ID),
-                            'price' => get_field('price',$post_data->ID),
-                            'offers' => get_field('offers',$post_data->ID),
-                            'age' => get_field('age',$post_data->ID),
-                            'size' => get_field('size', $post_data->ID),
-                            'previous' => get_field('previous', $post_data->ID),
-                            'color' => get_field('color',$post_data->ID),
-                            'best_sell' => get_field('best_sell',$post_data->ID),
-                        );
+            $newsdata = wp_insert_post( $my_post );
+            if($newsdata){
+                if (!empty($param['featured_image'])) {
+                    $attachment_id = $this->uploadImage($param['featured_image'], "intake_referall".$user_id);
+                    if ($attachment_id) {
+                        set_post_thumbnail($newsdata, $attachment_id);
+                    }else {
+                        return $this->errorResponse('Failed to upload image', null);
                     }
                 }
-                return $this->successResponse('Favourites Retrieved successfully', $favourite_post_data);
-            } 
-            else {
-                return $this->successResponse('No favourites found', []);
+                return $this->successResponse('Post inserted successfully', $newsdata);
+            }
+            else{
+                return $this->errorResponse('Failed to insert post', $newsdata);
             }
         }
-    }  
+    }
+
+    public function uploadImage($base64_img, $title){
+    	$upload_dir         =   wp_upload_dir();
+    	$upload_path        =   str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['path'] ). DIRECTORY_SEPARATOR;
+    	$explode            =   explode(";base64,", $base64_img);
+        $img                =   str_replace(' ', '+', $explode['1']);
+    	$decoded            =   base64_decode( $img );
+    	$filename           =   $title . '.jpeg';
+    	$file_type          =   'image/jpeg';
+    	$hashed_filename    =   md5( $filename . microtime() ) . '_' . $filename;
+    	$upload_file        =   file_put_contents( $upload_path . $hashed_filename, $decoded);
+    	$attachment         =   array(
+    		'post_mime_type' => $file_type,
+    		'post_title'     => preg_replace( '/\.[^.]+$/', '', basename($hashed_filename)),
+    		'post_content'   => '',
+    		'post_status'    => 'inherit',
+    		'guid'           => $upload_dir['url'] . '/' . basename($hashed_filename)
+    	);
+        $attach_id = wp_insert_attachment( $attachment, $upload_dir['path'] . '/' . $hashed_filename);
+    	return $attach_id;
+    }
+
+    public function getNewsFeed($data) {
+        global $wpdb;
+        $this->isValidToken(); 
+        $param = $data->get_params();
+    
+        $paged = !empty($param['paged']) ? intval($param['paged']) : 1;
+        $posts_per_page = 6; 
+        $offset = ($paged - 1) * $posts_per_page;
+        $args = array(
+            'numberposts' => $posts_per_page,
+            'orderby'     => 'date',
+            'post_type'   => 'news', 
+            'post_status' => 'publish',
+            'offset'      => $offset, 
+        );
+    
+        $news_posts = get_posts($args);
+    
+        $formatted_news = array();
+    
+        if ($news_posts) {
+            foreach ($news_posts as $post) {
+                // Retrieve the attachment ID for the featured image
+                $thumbnail_id = get_post_thumbnail_id($post->ID);
+                $attachment_url = wp_get_attachment_url($thumbnail_id); 
+    
+                $formatted_news[] = array(
+                    'post_id'        => $post->ID,
+                    'post_title'     => $post->post_title,
+                    'post_content'   => $post->post_content,
+                    'post_date'      => $post->post_date,
+                    'featured_image' => $attachment_url, 
+                );
+            }
+    
+            return $this->successResponse('News posts retrieved successfully', $formatted_news);
+        } else {
+            return $this->errorResponse('No news posts found', null);
+        }
+    }
+    
 }           
 $serverApi = new Custom_API();
 add_filter('jwt_auth_token_before_dispatch', array( $serverApi, 'jwt_auth' ), 20, 2);
